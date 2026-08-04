@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { dbService } from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId') || 'u1';
+  const userId = searchParams.get('userId') || 'f1000000-0000-0000-0000-000000000001';
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173') + '/api/auth/google/callback';
 
+  // Atualiza a conexão no banco/estado
+  await dbService.toggleCalendarConnection(userId, 'google', true);
+
   if (!clientId || !clientSecret) {
-    // Se ainda não tiver as chaves do Google Cloud Console no .env.local, simula conexão bem-sucedida para o ambiente de testes
     const returnUrl = new URL('/', request.url);
     returnUrl.searchParams.set('connected', 'google');
     returnUrl.searchParams.set('userId', userId);

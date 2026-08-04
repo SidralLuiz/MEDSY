@@ -40,7 +40,7 @@ export default function Home() {
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   // Data states
@@ -63,10 +63,19 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const connectedParam = urlParams.get('connected');
+      
       if (connectedParam === 'google') {
+        if (currentUser) {
+          setCurrentUser(prev => prev ? { ...prev, google_connected: true } : null);
+          dbService.toggleCalendarConnection(currentUser.id, 'google', true);
+        }
         showToast('Agenda do Google Calendar conectada com sucesso! 🗓️');
         setIsCalendarModalOpen(true);
       } else if (connectedParam === 'outlook') {
+        if (currentUser) {
+          setCurrentUser(prev => prev ? { ...prev, outlook_connected: true } : null);
+          dbService.toggleCalendarConnection(currentUser.id, 'outlook', true);
+        }
         showToast('Agenda do Microsoft Outlook conectada com sucesso! 📧');
         setIsCalendarModalOpen(true);
       }
