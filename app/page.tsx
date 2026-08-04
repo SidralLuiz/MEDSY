@@ -9,6 +9,7 @@ import { EquipeModule } from '@/components/EquipeModule';
 import { AgendamentoModule } from '@/components/AgendamentoModule';
 import { HorariosModule } from '@/components/HorariosModule';
 import { LoginModal } from '@/components/LoginModal';
+import { LoginPage } from '@/components/LoginPage';
 import { DatabaseStatusModal } from '@/components/DatabaseStatusModal';
 import { CalendarIntegrationsModal } from '@/components/CalendarIntegrationsModal';
 import { 
@@ -20,7 +21,7 @@ import {
   HorarioDisponivel, 
   Usuario 
 } from '@/lib/db';
-import { CheckCircle2, Sparkles } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -70,13 +71,6 @@ export default function Home() {
           dbService.toggleCalendarConnection(currentUser.id, 'google', true);
         }
         showToast('Agenda do Google Calendar conectada com sucesso! 🗓️');
-        setIsCalendarModalOpen(true);
-      } else if (connectedParam === 'outlook') {
-        if (currentUser) {
-          setCurrentUser(prev => prev ? { ...prev, outlook_connected: true } : null);
-          dbService.toggleCalendarConnection(currentUser.id, 'outlook', true);
-        }
-        showToast('Agenda do Microsoft Outlook conectada com sucesso! 📧');
         setIsCalendarModalOpen(true);
       }
     }
@@ -169,7 +163,7 @@ export default function Home() {
   // Handlers para Consultas & Horários
   const handleAddConsulta = async (c: Omit<Consulta, 'id'>) => {
     await dbService.addConsulta(c);
-    showToast(`Consulta agendada e sincronizada com Google & Outlook! 📅`);
+    showToast(`Consulta agendada e sincronizada no Google Calendar! 📅`);
     await refreshData();
   };
 
@@ -188,18 +182,28 @@ export default function Home() {
   const handleUserCalendarUpdate = () => {
     if (currentUser) {
       const newGoogle = !currentUser.google_connected;
-      const newOutlook = !currentUser.outlook_connected;
       setCurrentUser({
         ...currentUser,
-        google_connected: newGoogle,
-        outlook_connected: newOutlook
+        google_connected: newGoogle
       });
-      showToast('Status de integração de calendários atualizado!');
+      showToast('Status da integração com o Google Calendar atualizado!');
     }
   };
 
+  // Se o usuário não estiver logado, exibe a página inteira de Login pré-definida
+  if (!currentUser) {
+    return (
+      <LoginPage
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          showToast(`Bem-vindo, ${user.nome}! Login efetuado com sucesso.`);
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#0b1329] text-slate-100 flex flex-col relative">
+    <div className="min-h-screen bg-[#040711] text-slate-100 flex flex-col relative">
       
       {/* TOAST NOTIFICATION FLOATING BANNER */}
       {toastMessage && (
@@ -221,8 +225,8 @@ export default function Home() {
         onOpenCalendarModal={() => setIsCalendarModalOpen(true)}
       />
 
-      {/* CONTAINER PRINCIPAL DAS PÁGINAS */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
+      {/* CONTAINER PRINCIPAL DAS PÁGINAS WIDESCREEN */}
+      <div className="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
         
         {/* SIDEBAR NAVEGAÇÃO */}
         <Sidebar
@@ -247,8 +251,14 @@ export default function Home() {
                   horarios={horarios}
                   currentUser={currentUser}
                   setActiveTab={setActiveTab}
-                  onOpenAgendamentoModal={() => setIsAgendamentoModalOpen(true)}
-                  onOpenPacienteModal={() => setIsPacienteModalOpen(true)}
+                  onOpenAgendamentoModal={() => {
+                    setActiveTab('agendamentos');
+                    setIsAgendamentoModalOpen(true);
+                  }}
+                  onOpenPacienteModal={() => {
+                    setActiveTab('pacientes');
+                    setIsPacienteModalOpen(true);
+                  }}
                 />
               )}
 
@@ -316,7 +326,7 @@ export default function Home() {
 
       </div>
 
-      {/* MODAL LOGIN */}
+      {/* MODAL LOGIN SECUNDÁRIO */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
@@ -332,7 +342,7 @@ export default function Home() {
         onClose={() => setIsDbModalOpen(false)}
       />
 
-      {/* MODAL INTEGRAÇÃO GOOGLE & OUTLOOK CALENDARS */}
+      {/* MODAL INTEGRAÇÃO GOOGLE CALENDAR */}
       <CalendarIntegrationsModal
         isOpen={isCalendarModalOpen}
         onClose={() => setIsCalendarModalOpen(false)}

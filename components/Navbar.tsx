@@ -1,28 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Activity, User, LogOut, Shield, Database, Calendar } from 'lucide-react';
+import { Activity, User, LogOut, Shield, Calendar } from 'lucide-react';
 import { Usuario } from '@/lib/db';
-import { isSupabaseConfigured } from '@/lib/supabase';
 
 interface NavbarProps {
   currentUser: Usuario | null;
   onOpenLogin: () => void;
   onLogout: () => void;
-  onOpenDbModal: () => void;
   onOpenCalendarModal: () => void;
+  onOpenDbModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onOpenLogin,
   onLogout,
-  onOpenDbModal,
   onOpenCalendarModal
 }) => {
   return (
-    <header className="sticky top-0 z-30 w-full glass-card border-b border-slate-800/80 px-4 lg:px-8 py-3">
-      <div className="flex items-center justify-between">
+    <header className="sticky top-0 z-30 w-full glass-card border-b border-slate-800/80 px-6 lg:px-12 py-3.5">
+      <div className="flex items-center justify-between max-w-[1700px] mx-auto w-full">
         
         {/* LOGO & BRAND */}
         <div className="flex items-center space-x-3">
@@ -41,37 +39,22 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* CONTROLES E PERFIL */}
-        <div className="flex items-center space-x-3 sm:space-x-4">
+        <div className="flex items-center space-x-4">
           
           {/* BOTÃO GOOGLE CALENDAR */}
           <button
             onClick={onOpenCalendarModal}
-            className="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-all"
+            className="flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-all shadow-sm"
             title="Sincronização com Google Calendar"
           >
             <Calendar className="h-4 w-4 text-sky-400" />
-            <span className="hidden lg:inline">Google Calendar</span>
-          </button>
-
-          {/* BANCO DE DADOS STATUS BUTTON */}
-          <button
-            onClick={onOpenDbModal}
-            className={`flex items-center space-x-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all ${
-              isSupabaseConfigured
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
-            }`}
-          >
-            <Database className="h-4 w-4" />
-            <span className="hidden md:inline">
-              {isSupabaseConfigured ? 'Supabase Conectado' : 'Modo Local'}
-            </span>
+            <span>Google Calendar Sync</span>
           </button>
 
           {/* PERFIL / LOGIN */}
           {currentUser ? (
-            <div className="flex items-center space-x-3 bg-slate-800/60 pl-3 pr-2 py-1.5 rounded-xl border border-slate-700/50">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 bg-slate-900/80 pl-3 pr-2 py-1.5 rounded-xl border border-slate-800">
+              <div className="flex items-center space-x-2.5">
                 <div className="h-8 w-8 rounded-lg bg-sky-600/30 text-sky-400 flex items-center justify-center font-bold text-sm">
                   {currentUser.nome.charAt(0)}
                 </div>
