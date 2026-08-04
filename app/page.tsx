@@ -20,11 +20,12 @@ import {
   HorarioDisponivel, 
   Usuario 
 } from '@/lib/db';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [currentUser, setCurrentUser] = useState<Usuario | null>({
-    id: 'u1',
+    id: 'f1000000-0000-0000-0000-000000000001',
     cpf: '131',
     senha: 'paodequeijo123',
     nome: 'Luiz (Admin)',
@@ -33,6 +34,14 @@ export default function Home() {
     google_connected: true,
     outlook_connected: true
   });
+
+  // Toast Notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   // Data states
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -48,6 +57,21 @@ export default function Home() {
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isPacienteModalOpen, setIsPacienteModalOpen] = useState(false);
   const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
+
+  // Verificação de retorno OAuth na URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const connectedParam = urlParams.get('connected');
+      if (connectedParam === 'google') {
+        showToast('Agenda do Google Calendar conectada com sucesso! 🗓️');
+        setIsCalendarModalOpen(true);
+      } else if (connectedParam === 'outlook') {
+        showToast('Agenda do Microsoft Outlook conectada com sucesso! 📧');
+        setIsCalendarModalOpen(true);
+      }
+    }
+  }, []);
 
   // Load initial data
   const refreshData = async () => {
@@ -80,17 +104,20 @@ export default function Home() {
   // Handlers para Pacientes
   const handleAddPaciente = async (p: Omit<Paciente, 'id'>) => {
     await dbService.addPaciente(p);
+    showToast(`Paciente ${p.nome} cadastrado com sucesso!`);
     await refreshData();
   };
 
   const handleUpdatePaciente = async (id: string, p: Partial<Paciente>) => {
     await dbService.updatePaciente(id, p);
+    showToast(`Dados do paciente atualizados com sucesso!`);
     await refreshData();
   };
 
   const handleDeletePaciente = async (id: string) => {
     if (confirm('Deseja realmente remover este paciente?')) {
       await dbService.deletePaciente(id);
+      showToast(`Paciente removido.`);
       await refreshData();
     }
   };
@@ -98,29 +125,34 @@ export default function Home() {
   // Handlers para Médicos & Secretárias
   const handleAddMedico = async (m: Omit<Medico, 'id'>) => {
     await dbService.addMedico(m);
+    showToast(`Médico ${m.nome} cadastrado com sucesso!`);
     await refreshData();
   };
 
   const handleUpdateMedico = async (id: string, m: Partial<Medico>) => {
     await dbService.updateMedico(id, m);
+    showToast(`Cadastro médico atualizado!`);
     await refreshData();
   };
 
   const handleDeleteMedico = async (id: string) => {
     if (confirm('Deseja realmente remover este médico?')) {
       await dbService.deleteMedico(id);
+      showToast(`Médico removido.`);
       await refreshData();
     }
   };
 
   const handleAddSecretaria = async (s: Omit<Secretaria, 'id'>) => {
     await dbService.addSecretaria(s);
+    showToast(`Secretária ${s.nome} cadastrada com sucesso!`);
     await refreshData();
   };
 
   const handleDeleteSecretaria = async (id: string) => {
     if (confirm('Deseja realmente remover esta secretária?')) {
       await dbService.deleteSecretaria(id);
+      showToast(`Secretária removida.`);
       await refreshData();
     }
   };
@@ -128,37 +160,54 @@ export default function Home() {
   // Handlers para Consultas & Horários
   const handleAddConsulta = async (c: Omit<Consulta, 'id'>) => {
     await dbService.addConsulta(c);
+    showToast(`Consulta agendada e sincronizada com Google & Outlook! 📅`);
     await refreshData();
   };
 
   const handleUpdateConsultaStatus = async (id: string, status: Consulta['status']) => {
     await dbService.updateConsultaStatus(id, status);
+    showToast(`Status da consulta atualizado para: ${status}`);
     await refreshData();
   };
 
   const handleAddHorario = async (h: Omit<HorarioDisponivel, 'id'>) => {
     await dbService.addHorario(h);
+    showToast(`Horário de atendimento adicionado!`);
     await refreshData();
   };
 
   const handleUserCalendarUpdate = () => {
     if (currentUser) {
+      const newGoogle = !currentUser.google_connected;
+      const newOutlook = !currentUser.outlook_connected;
       setCurrentUser({
         ...currentUser,
-        google_connected: !currentUser.google_connected,
-        outlook_connected: !currentUser.outlook_connected
+        google_connected: newGoogle,
+        outlook_connected: newOutlook
       });
+      showToast('Status de integração de calendários atualizado!');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1329] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#0b1329] text-slate-100 flex flex-col relative">
       
+      {/* TOAST NOTIFICATION FLOATING BANNER */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 glass-card px-4 py-3 rounded-2xl border border-sky-500/40 text-sky-200 text-xs font-semibold flex items-center space-x-2 shadow-2xl animate-in slide-in-from-bottom-5 duration-300">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* NAVBAR FIXA */}
       <Navbar
         currentUser={currentUser}
         onOpenLogin={() => setIsLoginModalOpen(true)}
-        onLogout={() => setCurrentUser(null)}
+        onLogout={() => {
+          setCurrentUser(null);
+          showToast('Você saiu da sua conta.');
+        }}
         onOpenDbModal={() => setIsDbModalOpen(true)}
         onOpenCalendarModal={() => setIsCalendarModalOpen(true)}
       />
@@ -262,7 +311,10 @@ export default function Home() {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={(user) => setCurrentUser(user)}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          showToast(`Bem-vindo, ${user.nome}! Login efetuado com sucesso.`);
+        }}
       />
 
       {/* MODAL BANCO DE DADOS STATUS */}

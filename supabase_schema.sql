@@ -1,7 +1,7 @@
 -- ===================================================
 -- MEDSY 5.0 - SCHEMAS E ESTRUTURA PARA POSTGRESQL / SUPABASE
 -- Converted from legacy MySQL (MEDSY2) to PostgreSQL / Supabase
--- Updated with Google Calendar & Microsoft Outlook Integration fields
+-- Updated with valid UUID v4 primary keys
 -- ===================================================
 
 -- 1. EXTENSÕES
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
     senha VARCHAR(100) NOT NULL,
     nome VARCHAR(100) NOT NULL,
     nivel_acesso INT NOT NULL DEFAULT 1,
-    cargo VARCHAR(30) NOT NULL, -- 'ADMIN', 'SECRETARIA', 'MEDICO'
+    cargo VARCHAR(30) NOT NULL,
     ref_id UUID,
     google_refresh_token TEXT,
     google_access_token TEXT,
@@ -109,39 +109,39 @@ CREATE TABLE IF NOT EXISTS public.consultas (
 );
 
 -- ===================================================
--- DADOS INICIAIS DE TESTE / SEED DATA
+-- DADOS INICIAIS DE TESTE COM UUIDs VÁLIDOS
 -- ===================================================
 
 -- Inserir Administrador Padrão
-INSERT INTO public.usuarios (cpf, senha, nome, nivel_acesso, cargo)
-VALUES ('131', 'paodequeijo123', 'Luiz (Admin)', 4, 'ADMIN')
+INSERT INTO public.usuarios (id, cpf, senha, nome, nivel_acesso, cargo)
+VALUES ('f1000000-0000-0000-0000-000000000001', '131', 'paodequeijo123', 'Luiz (Admin)', 4, 'ADMIN')
 ON CONFLICT (cpf) DO NOTHING;
 
 -- Inserir Pacientes
-INSERT INTO public.pacientes (nome, cpf, email, data_nascimento, telefone, endereco) VALUES
-('Luiz Fernando Sidral', '82815453991', 'luiz.sidral@email.com', '17/05/1998', '(47) 99141-5518', 'Rua 15 de Agosto, 2103'),
-('Maria Silva', '29406135700', 'maria.silva@email.com', '12/03/1990', '(11) 91234-5678', 'Rua das Flores, 102'),
-('João Santos', '72538041900', 'joao123@gmail.com', '04/11/1985', '(21) 99876-5432', 'Av. Atlântica, 500')
+INSERT INTO public.pacientes (id, nome, cpf, email, data_nascimento, telefone, endereco) VALUES
+('a1000000-0000-0000-0000-000000000001', 'Luiz Fernando Sidral', '82815453991', 'luiz.sidral@email.com', '17/05/1998', '(47) 99141-5518', 'Rua 15 de Agosto, 2103'),
+('a1000000-0000-0000-0000-000000000002', 'Maria Silva', '29406135700', 'maria.silva@email.com', '12/03/1990', '(11) 91234-5678', 'Rua das Flores, 102'),
+('a1000000-0000-0000-0000-000000000003', 'João Santos', '72538041900', 'joao123@gmail.com', '04/11/1985', '(21) 99876-5432', 'Av. Atlântica, 500')
 ON CONFLICT (cpf) DO NOTHING;
 
 -- Inserir Médicos
-INSERT INTO public.medicos (nome, cpf, email, data_nascimento, telefone, endereco, crm, especialidade, senha) VALUES
-('Dr. Carlos Oliveira', '51892637000', 'carlos.oliveira@yahoo.com', '22/08/1980', '(47) 99141-3413', 'Rua 16 de Agosto, 45', '123456/SP', 'Cardiologia', '2103'),
-('Dra. Ana Beatriz', '61928374511', 'ana.beatriz@medsy.com', '10/01/1988', '(47) 98877-6655', 'Av. Brasil, 890', '654321/SC', 'Pediatria', '123456')
+INSERT INTO public.medicos (id, nome, cpf, email, data_nascimento, telefone, endereco, crm, especialidade, senha) VALUES
+('b1000000-0000-0000-0000-000000000001', 'Dr. Carlos Oliveira', '51892637000', 'carlos.oliveira@yahoo.com', '22/08/1980', '(47) 99141-3413', 'Rua 16 de Agosto, 45', '123456/SP', 'Cardiologia', '2103'),
+('b1000000-0000-0000-0000-000000000002', 'Dra. Ana Beatriz', '61928374511', 'ana.beatriz@medsy.com', '10/01/1988', '(47) 98877-6655', 'Av. Brasil, 890', '654321/SC', 'Pediatria', '123456')
 ON CONFLICT (cpf) DO NOTHING;
 
 -- Criar Login para Médicos
-INSERT INTO public.usuarios (cpf, senha, nome, nivel_acesso, cargo) VALUES
-('51892637000', '2103', 'Dr. Carlos Oliveira', 1, 'MEDICO'),
-('61928374511', '123456', 'Dra. Ana Beatriz', 1, 'MEDICO')
+INSERT INTO public.usuarios (id, cpf, senha, nome, nivel_acesso, cargo) VALUES
+('f1000000-0000-0000-0000-000000000002', '51892637000', '2103', 'Dr. Carlos Oliveira', 1, 'MEDICO'),
+('f1000000-0000-0000-0000-000000000003', '61928374511', '123456', 'Dra. Ana Beatriz', 1, 'MEDICO')
 ON CONFLICT (cpf) DO NOTHING;
 
 -- Inserir Secretárias
-INSERT INTO public.secretarias (nome, cpf, email, data_nascimento, telefone, endereco, senha) VALUES
-('Luiza Martins', '05824196300', 'ana.martins@hotmail.com', '15/09/1995', '(47) 99141-9988', 'Rua 15 de Agosto, 100', '2103')
+INSERT INTO public.secretarias (id, nome, cpf, email, data_nascimento, telefone, endereco, senha) VALUES
+('c1000000-0000-0000-0000-000000000001', 'Luiza Martins', '05824196300', 'ana.martins@hotmail.com', '15/09/1995', '(47) 99141-9988', 'Rua 15 de Agosto, 100', '2103')
 ON CONFLICT (cpf) DO NOTHING;
 
 -- Criar Login para Secretária
-INSERT INTO public.usuarios (cpf, senha, nome, nivel_acesso, cargo) VALUES
-('05824196300', '2103', 'Luiza Martins (Secretária)', 3, 'SECRETARIA')
+INSERT INTO public.usuarios (id, cpf, senha, nome, nivel_acesso, cargo) VALUES
+('f1000000-0000-0000-0000-000000000004', '05824196300', '2103', 'Luiza Martins (Secretária)', 3, 'SECRETARIA')
 ON CONFLICT (cpf) DO NOTHING;

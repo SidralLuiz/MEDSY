@@ -85,9 +85,18 @@ export interface Usuario {
   outlook_connected?: boolean;
 }
 
+// Helper para gerar UUID v4 válido no navegador ou Node.js
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'f' + Date.now().toString(16) + '-4000-8000-000000000000'.substring(13);
+}
+
+// UUIDs válidos de 36 caracteres para compatibilidade total com PostgreSQL UUID
 const INITIAL_PACIENTES: Paciente[] = [
   {
-    id: 'p1',
+    id: 'a1000000-0000-0000-0000-000000000001',
     nome: 'Luiz Fernando Sidral',
     cpf: '82815453991',
     email: 'luiz.sidral@email.com',
@@ -97,7 +106,7 @@ const INITIAL_PACIENTES: Paciente[] = [
     google_connected: true
   },
   {
-    id: 'p2',
+    id: 'a1000000-0000-0000-0000-000000000002',
     nome: 'Maria Silva',
     cpf: '29406135700',
     email: 'maria.silva@email.com',
@@ -106,7 +115,7 @@ const INITIAL_PACIENTES: Paciente[] = [
     endereco: 'Rua das Flores, 102'
   },
   {
-    id: 'p3',
+    id: 'a1000000-0000-0000-0000-000000000003',
     nome: 'João Santos',
     cpf: '72538041900',
     email: 'joao123@gmail.com',
@@ -118,7 +127,7 @@ const INITIAL_PACIENTES: Paciente[] = [
 
 const INITIAL_MEDICOS: Medico[] = [
   {
-    id: 'm1',
+    id: 'b1000000-0000-0000-0000-000000000001',
     nome: 'Dr. Carlos Oliveira',
     cpf: '51892637000',
     email: 'carlos.oliveira@yahoo.com',
@@ -132,7 +141,7 @@ const INITIAL_MEDICOS: Medico[] = [
     outlook_connected: true
   },
   {
-    id: 'm2',
+    id: 'b1000000-0000-0000-0000-000000000002',
     nome: 'Dra. Ana Beatriz',
     cpf: '61928374511',
     email: 'ana.beatriz@medsy.com',
@@ -148,7 +157,7 @@ const INITIAL_MEDICOS: Medico[] = [
 
 const INITIAL_SECRETARIAS: Secretaria[] = [
   {
-    id: 's1',
+    id: 'c1000000-0000-0000-0000-000000000001',
     nome: 'Luiza Martins',
     cpf: '05824196300',
     email: 'ana.martins@hotmail.com',
@@ -160,12 +169,12 @@ const INITIAL_SECRETARIAS: Secretaria[] = [
 ];
 
 const INITIAL_HORARIOS: HorarioDisponivel[] = [
-  { id: 'h1', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '08:00', disponivel: true },
-  { id: 'h2', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '09:00', disponivel: false },
-  { id: 'h3', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '10:30', disponivel: true },
-  { id: 'h4', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '14:00', disponivel: true },
-  { id: 'h5', medico_nome: 'Dra. Ana Beatriz', especialidade: 'Pediatria', dia_semana: 2, horario: '08:30', disponivel: true },
-  { id: 'h6', medico_nome: 'Dra. Ana Beatriz', especialidade: 'Pediatria', dia_semana: 2, horario: '10:00', disponivel: false }
+  { id: 'd1000000-0000-0000-0000-000000000001', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '08:00', disponivel: true },
+  { id: 'd1000000-0000-0000-0000-000000000002', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '09:00', disponivel: false },
+  { id: 'd1000000-0000-0000-0000-000000000003', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '10:30', disponivel: true },
+  { id: 'd1000000-0000-0000-0000-000000000004', medico_nome: 'Dr. Carlos Oliveira', especialidade: 'Cardiologia', dia_semana: 1, horario: '14:00', disponivel: true },
+  { id: 'd1000000-0000-0000-0000-000000000005', medico_nome: 'Dra. Ana Beatriz', especialidade: 'Pediatria', dia_semana: 2, horario: '08:30', disponivel: true },
+  { id: 'd1000000-0000-0000-0000-000000000006', medico_nome: 'Dra. Ana Beatriz', especialidade: 'Pediatria', dia_semana: 2, horario: '10:00', disponivel: false }
 ];
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
@@ -177,10 +186,10 @@ const getTomorrowString = () => {
 
 const INITIAL_CONSULTAS: Consulta[] = [
   {
-    id: 'c1',
-    paciente_id: 'p1',
+    id: 'e1000000-0000-0000-0000-000000000001',
+    paciente_id: 'a1000000-0000-0000-0000-000000000001',
     paciente_nome: 'Luiz Fernando Sidral',
-    medico_id: 'm1',
+    medico_id: 'b1000000-0000-0000-0000-000000000001',
     medico_nome: 'Dr. Carlos Oliveira',
     especialidade: 'Cardiologia',
     data_consulta: getTodayString(),
@@ -191,10 +200,10 @@ const INITIAL_CONSULTAS: Consulta[] = [
     outlook_event_id: 'o_evt_sample1'
   },
   {
-    id: 'c2',
-    paciente_id: 'p2',
+    id: 'e1000000-0000-0000-0000-000000000002',
+    paciente_id: 'a1000000-0000-0000-0000-000000000002',
     paciente_nome: 'Maria Silva',
-    medico_id: 'm2',
+    medico_id: 'b1000000-0000-0000-0000-000000000002',
     medico_nome: 'Dra. Ana Beatriz',
     especialidade: 'Pediatria',
     data_consulta: getTomorrowString(),
@@ -206,10 +215,10 @@ const INITIAL_CONSULTAS: Consulta[] = [
 ];
 
 const INITIAL_USUARIOS: Usuario[] = [
-  { id: 'u1', cpf: '131', senha: 'paodequeijo123', nome: 'Luiz (Admin)', nivel_acesso: 4, cargo: 'ADMIN', google_connected: true, outlook_connected: true },
-  { id: 'u2', cpf: '51892637000', senha: '2103', nome: 'Dr. Carlos Oliveira', nivel_acesso: 1, cargo: 'MEDICO', google_connected: true, outlook_connected: true },
-  { id: 'u3', cpf: '61928374511', senha: '123456', nome: 'Dra. Ana Beatriz', nivel_acesso: 1, cargo: 'MEDICO', google_connected: true },
-  { id: 'u4', cpf: '05824196300', senha: '2103', nome: 'Luiza Martins', nivel_acesso: 3, cargo: 'SECRETARIA' }
+  { id: 'f1000000-0000-0000-0000-000000000001', cpf: '131', senha: 'paodequeijo123', nome: 'Luiz (Admin)', nivel_acesso: 4, cargo: 'ADMIN', google_connected: true, outlook_connected: true },
+  { id: 'f1000000-0000-0000-0000-000000000002', cpf: '51892637000', senha: '2103', nome: 'Dr. Carlos Oliveira', nivel_acesso: 1, cargo: 'MEDICO', google_connected: true, outlook_connected: true },
+  { id: 'f1000000-0000-0000-0000-000000000003', cpf: '61928374511', senha: '123456', nome: 'Dra. Ana Beatriz', nivel_acesso: 1, cargo: 'MEDICO', google_connected: true },
+  { id: 'f1000000-0000-0000-0000-000000000004', cpf: '05824196300', senha: '2103', nome: 'Luiza Martins', nivel_acesso: 3, cargo: 'SECRETARIA' }
 ];
 
 function loadLocalData<T>(key: string, fallback: T): T {
@@ -242,10 +251,10 @@ export const dbService = {
   },
 
   async addPaciente(paciente: Omit<Paciente, 'id'>): Promise<Paciente> {
-    const newId = 'p_' + Date.now();
+    const newId = generateUUID();
     const item: Paciente = { ...paciente, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('pacientes').insert([paciente]).select().single();
+      const { data, error } = await supabase.from('pacientes').insert([item]).select().single();
       if (!error && data) return data;
     }
     const current = loadLocalData('pacientes', INITIAL_PACIENTES);
@@ -284,10 +293,10 @@ export const dbService = {
   },
 
   async addMedico(medico: Omit<Medico, 'id'>): Promise<Medico> {
-    const newId = 'm_' + Date.now();
+    const newId = generateUUID();
     const item: Medico = { ...medico, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('medicos').insert([medico]).select().single();
+      const { data, error } = await supabase.from('medicos').insert([item]).select().single();
       if (!error && data) return data;
     }
     const current = loadLocalData('medicos', INITIAL_MEDICOS);
@@ -326,10 +335,10 @@ export const dbService = {
   },
 
   async addSecretaria(sec: Omit<Secretaria, 'id'>): Promise<Secretaria> {
-    const newId = 's_' + Date.now();
+    const newId = generateUUID();
     const item: Secretaria = { ...sec, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('secretarias').insert([sec]).select().single();
+      const { data, error } = await supabase.from('secretarias').insert([item]).select().single();
       if (!error && data) return data;
     }
     const current = loadLocalData('secretarias', INITIAL_SECRETARIAS);
@@ -348,7 +357,7 @@ export const dbService = {
     saveLocalData('secretarias', updated);
   },
 
-  // CONSULTAS (COM API ROUTE SYNC DUAL EM GOOGLE E OUTLOOK CALENDAR)
+  // CONSULTAS
   async getConsultas(): Promise<Consulta[]> {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase.from('consultas').select('*').order('data_consulta', { ascending: true });
@@ -386,7 +395,7 @@ export const dbService = {
       console.warn('Calendar sync api notice:', e);
     }
 
-    const newId = 'c_' + Date.now();
+    const newId = generateUUID();
     const item: Consulta = { 
       ...consulta, 
       id: newId,
@@ -450,10 +459,10 @@ export const dbService = {
   },
 
   async addHorario(horario: Omit<HorarioDisponivel, 'id'>): Promise<HorarioDisponivel> {
-    const newId = 'h_' + Date.now();
+    const newId = generateUUID();
     const item: HorarioDisponivel = { ...horario, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('horarios_disponiveis').insert([horario]).select().single();
+      const { data, error } = await supabase.from('horarios_disponiveis').insert([item]).select().single();
       if (!error && data) return data;
     }
     const current = loadLocalData('horarios', INITIAL_HORARIOS);
