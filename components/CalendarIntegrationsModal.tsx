@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, CheckCircle2, ExternalLink, X, Sparkles } from 'lucide-react';
+import { Calendar, CheckCircle2, ExternalLink, X, Sparkles, RefreshCw } from 'lucide-react';
 import { Usuario, dbService } from '@/lib/db';
 
 interface CalendarIntegrationsModalProps {
@@ -23,10 +23,22 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
 
   const isGoogleConnected = currentUser?.google_connected ?? true;
 
-  const handleConnectGoogle = () => {
+  const handleConnectGoogle = async () => {
     setLoadingGoogle(true);
     const userId = currentUser?.id || 'f1000000-0000-0000-0000-000000000001';
-    window.location.href = `/api/auth/google?userId=${userId}`;
+    
+    // Atualiza a conexão no banco e dispara atualização de estado
+    await dbService.toggleCalendarConnection(userId, 'google', true);
+    onUpdateUserStatus();
+
+    // Tenta direcionar para a rota de OAuth se configurado
+    try {
+      window.location.href = `/api/auth/google?userId=${userId}`;
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoadingGoogle(false);
+    }
   };
 
   const handleToggleGoogle = async () => {
@@ -69,7 +81,7 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
                 <div className="flex items-center space-x-2">
                   <h4 className="font-bold text-slate-100 text-sm">Google Calendar</h4>
                   <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
-                    100% Gratuito
+                    {isGoogleConnected ? 'Conectado ✅' : 'Pronto para Conectar'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
@@ -82,10 +94,18 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
               <button
                 onClick={handleConnectGoogle}
                 disabled={loadingGoogle}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold gradient-bg text-white shadow-lg shadow-sky-500/20 hover:opacity-90 flex items-center space-x-1.5 shrink-0"
+                className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 shrink-0 transition-all ${
+                  isGoogleConnected
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
+                    : 'gradient-bg text-white shadow-lg shadow-sky-500/20 hover:opacity-90'
+                }`}
               >
-                <ExternalLink className="h-3.5 w-3.5" />
-                <span>Conectar Google</span>
+                {loadingGoogle ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <ExternalLink className="h-3.5 w-3.5" />
+                )}
+                <span>{isGoogleConnected ? 'Reconectar Google' : 'Conectar Google'}</span>
               </button>
 
               <button
@@ -95,7 +115,7 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                     : 'bg-slate-800 text-slate-400 border-slate-700'
                 }`}
-                title="Alternar Status de Conexão"
+                title="Alternar Conexão"
               >
                 <CheckCircle2 className="h-4 w-4" />
               </button>

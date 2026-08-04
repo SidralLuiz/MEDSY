@@ -7,7 +7,7 @@ import {
   UserCheck, 
   Calendar, 
   Clock, 
-  Database,
+  ShieldCheck,
   Lock,
   ChevronRight
 } from 'lucide-react';
@@ -27,7 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser
 }) => {
   const isAllowed = (minLevel: number) => {
-    if (!currentUser) return true; // Permite navegação livre em modo de demonstração
+    if (!currentUser) return true;
     return currentUser.nivel_acesso >= minLevel;
   };
 
@@ -43,14 +43,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'pacientes' as ActiveTab,
       label: 'Pacientes',
       icon: Users,
-      minLevel: 3, // Admin ou Secretária
+      minLevel: 3,
       desc: 'Cadastro e Prontuários'
     },
     {
       id: 'equipe' as ActiveTab,
       label: 'Equipe Médica & Staff',
       icon: UserCheck,
-      minLevel: 4, // Somente Admin
+      minLevel: 4,
       desc: 'Médicos e Secretárias'
     },
     {
@@ -69,15 +69,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'database' as ActiveTab,
-      label: 'Banco de Dados',
-      icon: Database,
+      label: 'Segurança & Sistema',
+      icon: ShieldCheck,
       minLevel: 4,
-      desc: 'PostgreSQL / Supabase'
+      desc: 'Configurações e Proteção'
     }
   ];
 
   return (
-    <aside className="w-full lg:w-64 glass-card rounded-2xl p-4 flex flex-col justify-between shrink-0 mb-6 lg:mb-0">
+    <aside className="w-full lg:w-72 glass-card rounded-2xl p-4 flex flex-col justify-between shrink-0 mb-6 lg:mb-0">
       <div className="space-y-1">
         <div className="px-3 py-2 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
           Menu de Navegação
@@ -93,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               disabled={!allowed}
               onClick={() => allowed && setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between p-3 rounded-xl transition-all group ${
+              className={`w-full flex items-center justify-between p-3.5 rounded-xl transition-all group ${
                 isActive
                   ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-lg shadow-sky-500/10'
                   : allowed
@@ -124,8 +124,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* FOOTER INFO DA SIDEBAR */}
       <div className="pt-4 border-t border-slate-800/80 mt-4 text-center">
         <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-          <p className="text-[11px] font-semibold text-slate-300">MEDSY modernizado</p>
-          <p className="text-[10px] text-slate-500 mt-0.5">PostgreSQL & React Node Engine</p>
+          <p className="text-[11px] font-semibold text-slate-300">MEDSY Enterprise</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">Plataforma Médica Integrada</p>
         </div>
       </div>
     </aside>

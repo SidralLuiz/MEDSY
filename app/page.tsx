@@ -21,7 +21,7 @@ import {
   HorarioDisponivel, 
   Usuario 
 } from '@/lib/db';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -94,7 +94,7 @@ export default function Home() {
       setConsultas(cData);
       setHorarios(hData);
     } catch (err) {
-      console.error('Erro ao carregar dados do banco:', err);
+      console.error('Erro ao carregar dados:', err);
     } finally {
       setLoading(false);
     }
@@ -239,7 +239,7 @@ export default function Home() {
         <main className="flex-1 w-full min-w-0">
           {loading ? (
             <div className="glass-card rounded-2xl p-12 text-center text-slate-400 animate-pulse">
-              Carregando dados e sincronizações do MEDSY...
+              Carregando dados do MEDSY...
             </div>
           ) : (
             <>
@@ -308,15 +308,18 @@ export default function Home() {
 
               {activeTab === 'database' && (
                 <div className="glass-card rounded-2xl p-6 border border-slate-800 space-y-4">
-                  <h1 className="text-xl font-bold text-white">Configuração do Banco PostgreSQL (Supabase)</h1>
+                  <h1 className="text-xl font-bold text-white flex items-center space-x-2">
+                    <ShieldCheck className="h-5 w-5 text-sky-400" />
+                    <span>Segurança & Configurações da Clínica</span>
+                  </h1>
                   <p className="text-xs text-slate-400">
-                    O projeto MEDSY foi totalmente convertido de MySQL legados para PostgreSQL/Supabase.
+                    O MEDSY utiliza criptografia e conexões seguras para proteger os dados médicos dos seus pacientes.
                   </p>
                   <button
                     onClick={() => setIsDbModalOpen(true)}
                     className="px-4 py-2 rounded-xl gradient-bg text-white font-semibold text-xs shadow-lg"
                   >
-                    Ver Instruções de Conexão Supabase
+                    Ver Status de Conectividade
                   </button>
                 </div>
               )}

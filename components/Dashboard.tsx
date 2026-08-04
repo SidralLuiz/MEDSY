@@ -8,7 +8,6 @@ import {
   Clock, 
   Activity, 
   CheckCircle2, 
-  AlertCircle,
   PlusCircle,
   ChevronRight,
   TrendingUp,
@@ -58,7 +57,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               Bem-vindo, <span className="gradient-text">{currentUser ? currentUser.nome : 'Administrador'}</span>!
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-xl">
-              Sistema de controle médico atualizado para Node.js & PostgreSQL (Supabase). Acompanhe os agendamentos, pacientes e grade horária de forma centralizada.
+              Sistema de controle médico integrado. Acompanhe os agendamentos, pacientes e grade horária de forma centralizada.
             </p>
           </div>
 
@@ -276,7 +275,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="mt-6 pt-4 border-t border-slate-800 text-slate-400 text-[11px] flex items-center space-x-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-            <span>Node.js v26 runtime ativada com persistência via Supabase PostgreSQL.</span>
+            <span>Sistema online com sincronização instantânea em nuvem.</span>
           </div>
         </div>
 

@@ -30,8 +30,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xl font-extrabold tracking-wider gradient-text">MEDSY</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30 font-semibold">
-                v5.0 Node + Supabase
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30 font-bold">
+                v5.0 Enterprise
               </span>
             </div>
             <p className="text-xs text-slate-400 hidden sm:block">Sistema Inteligente de Gestão Médica</p>
@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Sincronização com Google Calendar"
           >
             <Calendar className="h-4 w-4 text-sky-400" />
-            <span>Google Calendar Sync</span>
+            <span>Google Calendar</span>
           </button>
 
           {/* PERFIL / LOGIN */}

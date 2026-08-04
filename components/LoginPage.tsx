@@ -10,10 +10,10 @@ import {
   Calendar, 
   Users, 
   Stethoscope, 
-  CheckCircle2, 
   ArrowRight,
   HeartPulse,
-  Lock
+  Lock,
+  Database
 } from 'lucide-react';
 import { dbService, Usuario } from '@/lib/db';
 
@@ -40,7 +40,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         setErrorMsg('CPF ou Senha incorretos. Verifique suas credenciais.');
       }
     } catch (err) {
-      setErrorMsg('Erro ao conectar com o banco de dados.');
+      setErrorMsg('Erro ao conectar com o sistema.');
     } finally {
       setLoading(false);
     }
@@ -127,11 +127,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
               <div className="flex items-center space-x-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
                 <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 shrink-0">
-                  <Users className="h-4 w-4" />
+                  <Database className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-200">PostgreSQL / Supabase Engine</p>
-                  <p className="text-[11px] text-slate-400">Banco relacional de alta performance e segurança com níveis de acesso.</p>
+                  <p className="font-bold text-slate-200">Armazenamento Seguro em Nuvem</p>
+                  <p className="text-[11px] text-slate-400">Proteção de dados com controle de níveis de acesso.</p>
                 </div>
               </div>
             </div>
@@ -140,7 +140,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
           <div className="pt-8 border-t border-slate-800/80 text-[11px] text-slate-500 flex items-center justify-between">
             <span>© 2026 MEDSY Inc. Todos os direitos reservados.</span>
-            <span className="text-sky-400 font-semibold">Node.js + Supabase</span>
+            <span className="text-sky-400 font-semibold">MEDSY v5.0 Enterprise</span>
           </div>
         </div>
 
@@ -264,7 +264,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               className="w-full py-3.5 rounded-xl gradient-bg text-white font-bold shadow-xl shadow-sky-500/25 hover:opacity-95 transition-all text-sm flex items-center justify-center space-x-2 mt-2"
             >
               <ShieldCheck className="h-4 w-4" />
-              <span>{loading ? 'Autenticando no Banco...' : 'Entrar no MEDSY'}</span>
+              <span>{loading ? 'Autenticando...' : 'Entrar no MEDSY'}</span>
             </button>
           </form>
 
