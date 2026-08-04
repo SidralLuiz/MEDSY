@@ -96,10 +96,10 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
         <div>
           <h1 className="text-xl font-bold text-white flex items-center space-x-2">
             <CalendarIcon className="h-5 w-5 text-sky-400" />
-            <span>Agendamento de Consultas & Calendários</span>
+            <span>Agendamento de Consultas & Google Calendar</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Sincronização automática com agendas **Google Calendar** e **Microsoft Outlook**.
+            Sincronização gratuita e em tempo real com a agenda do **Google Calendar**.
           </p>
         </div>
 
@@ -202,16 +202,10 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
                       {c.status}
                     </span>
 
-                    {/* BADGES DE SINCRONIZAÇÃO GOOGLE & OUTLOOK */}
+                    {/* BADGE GOOGLE CALENDAR */}
                     {c.google_event_id && (
-                      <span className="inline-flex items-center space-x-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
+                      <span className="inline-flex items-center space-x-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
                         <span>🗓️ Google Calendar</span>
-                      </span>
-                    )}
-
-                    {c.outlook_event_id && (
-                      <span className="inline-flex items-center space-x-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
-                        <span>📧 Outlook</span>
                       </span>
                     )}
                   </div>
@@ -285,7 +279,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
             <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
               <h3 className="text-lg font-bold text-white flex items-center space-x-2">
                 <CalendarIcon className="h-5 w-5 text-sky-400" />
-                <span>Agendar Consulta & Sincronizar Calendários</span>
+                <span>Agendar Consulta & Google Calendar</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -372,7 +366,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
 
               <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-sky-300 flex items-center space-x-2">
                 <Sparkles className="h-4 w-4 text-sky-400 shrink-0" />
-                <span>O evento será sincronizado automaticamente no Google Calendar e Outlook das contas conectadas.</span>
+                <span>O evento será sincronizado automaticamente na agenda do Google Calendar dos envolvidos.</span>
               </div>
 
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">

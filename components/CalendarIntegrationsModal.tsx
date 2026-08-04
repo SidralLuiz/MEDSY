@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, CheckCircle2, XCircle, ExternalLink, RefreshCw, X, ShieldCheck, Mail, Sparkles } from 'lucide-react';
+import { Calendar, CheckCircle2, ExternalLink, X, Sparkles } from 'lucide-react';
 import { Usuario, dbService } from '@/lib/db';
 
 interface CalendarIntegrationsModalProps {
@@ -18,23 +18,15 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
   onUpdateUserStatus
 }) => {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
-  const [loadingOutlook, setLoadingOutlook] = useState(false);
 
   if (!isOpen) return null;
 
   const isGoogleConnected = currentUser?.google_connected ?? true;
-  const isOutlookConnected = currentUser?.outlook_connected ?? true;
 
   const handleConnectGoogle = () => {
     setLoadingGoogle(true);
-    const userId = currentUser?.id || 'u1';
+    const userId = currentUser?.id || 'f1000000-0000-0000-0000-000000000001';
     window.location.href = `/api/auth/google?userId=${userId}`;
-  };
-
-  const handleConnectOutlook = () => {
-    setLoadingOutlook(true);
-    const userId = currentUser?.id || 'u1';
-    window.location.href = `/api/auth/outlook?userId=${userId}`;
   };
 
   const handleToggleGoogle = async () => {
@@ -43,14 +35,6 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
     await dbService.toggleCalendarConnection(currentUser.id, 'google', !isGoogleConnected);
     onUpdateUserStatus();
     setLoadingGoogle(false);
-  };
-
-  const handleToggleOutlook = async () => {
-    if (!currentUser) return;
-    setLoadingOutlook(true);
-    await dbService.toggleCalendarConnection(currentUser.id, 'outlook', !isOutlookConnected);
-    onUpdateUserStatus();
-    setLoadingOutlook(false);
   };
 
   return (
@@ -63,8 +47,8 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
               <Calendar className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Integração de Agendas (Google & Outlook)</h3>
-              <p className="text-xs text-slate-400">Sincronização bidirecional em tempo real</p>
+              <h3 className="text-base font-bold text-white">Integração com Google Calendar</h3>
+              <p className="text-xs text-slate-400">Sincronização em tempo real 100% gratuita</p>
             </div>
           </div>
 
@@ -75,21 +59,21 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
 
         <div className="space-y-4 text-xs">
           
-          {/* CARD 1: GOOGLE CALENDAR */}
-          <div className="glass-card rounded-2xl p-4 border border-slate-800 flex items-center justify-between gap-4">
+          {/* CARD GOOGLE CALENDAR */}
+          <div className="glass-card rounded-2xl p-5 border border-slate-800 flex items-center justify-between gap-4">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold shrink-0 border border-blue-500/20">
+              <div className="h-12 w-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold shrink-0 border border-blue-500/20 text-xl">
                 🗓️
               </div>
               <div>
                 <div className="flex items-center space-x-2">
                   <h4 className="font-bold text-slate-100 text-sm">Google Calendar</h4>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
-                    Gratuito (R$ 0,00)
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+                    100% Gratuito
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Criar e sincronizar eventos na agenda do Google Workspace/Gmail.
+                <p className="text-xs text-slate-400 mt-1">
+                  Criar e sincronizar eventos nas agendas do médico e paciente no Google Workspace/Gmail.
                 </p>
               </div>
             </div>
@@ -98,7 +82,7 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
               <button
                 onClick={handleConnectGoogle}
                 disabled={loadingGoogle}
-                className="px-4 py-2 rounded-xl text-xs font-semibold gradient-bg text-white shadow-lg shadow-sky-500/20 hover:opacity-90 flex items-center space-x-1 shrink-0"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold gradient-bg text-white shadow-lg shadow-sky-500/20 hover:opacity-90 flex items-center space-x-1.5 shrink-0"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 <span>Conectar Google</span>
@@ -106,55 +90,12 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
 
               <button
                 onClick={handleToggleGoogle}
-                className={`p-2 rounded-xl text-xs border transition-all ${
+                className={`p-2.5 rounded-xl text-xs border transition-all ${
                   isGoogleConnected
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                     : 'bg-slate-800 text-slate-400 border-slate-700'
                 }`}
-                title="Alternar Status"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* CARD 2: MICROSOFT OUTLOOK CALENDAR */}
-          <div className="glass-card rounded-2xl p-4 border border-slate-800 flex items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold shrink-0 border border-purple-500/20">
-                📧
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h4 className="font-bold text-slate-100 text-sm">Microsoft Outlook Calendar</h4>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
-                    Gratuito (Microsoft Graph)
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Sincronização com contas Outlook, Hotmail e Microsoft 365.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleConnectOutlook}
-                disabled={loadingOutlook}
-                className="px-4 py-2 rounded-xl text-xs font-semibold gradient-bg text-white shadow-lg shadow-purple-500/20 hover:opacity-90 flex items-center space-x-1 shrink-0"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                <span>Conectar Outlook</span>
-              </button>
-
-              <button
-                onClick={handleToggleOutlook}
-                className={`p-2 rounded-xl text-xs border transition-all ${
-                  isOutlookConnected
-                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
-                }`}
-                title="Alternar Status"
+                title="Alternar Status de Conexão"
               >
                 <CheckCircle2 className="h-4 w-4" />
               </button>
@@ -162,12 +103,12 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
           </div>
 
           {/* DICA DE SINCRONIZAÇÃO */}
-          <div className="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 flex items-start space-x-3 text-slate-300">
+          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 flex items-start space-x-3 text-slate-300">
             <Sparkles className="h-4 w-4 text-sky-400 shrink-0 mt-0.5" />
             <div className="text-[11px] leading-relaxed">
-              <p className="font-semibold text-slate-200">Como funciona a Sincronização Dual:</p>
+              <p className="font-semibold text-slate-200">Como funciona a Sincronização:</p>
               <p className="text-slate-400 mt-0.5">
-                Ao cadastrar ou confirmar consultas no MEDSY, os convites de agendamento são enviados automaticamente para as agendas do médico e do paciente conectadas.
+                Ao cadastrar ou confirmar consultas no MEDSY, os convites de agendamento são enviados e salvos automaticamente no Google Calendar dos médicos e pacientes cadastrados.
               </p>
             </div>
           </div>

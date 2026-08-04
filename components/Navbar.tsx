@@ -43,14 +43,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* CONTROLES E PERFIL */}
         <div className="flex items-center space-x-3 sm:space-x-4">
           
-          {/* BOTÃO CALENDÁRIOS GOOGLE / OUTLOOK */}
+          {/* BOTÃO GOOGLE CALENDAR */}
           <button
             onClick={onOpenCalendarModal}
             className="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-all"
-            title="Conexão com Google Calendar e Outlook"
+            title="Sincronização com Google Calendar"
           >
             <Calendar className="h-4 w-4 text-sky-400" />
-            <span className="hidden lg:inline">Agenda Google & Outlook</span>
+            <span className="hidden lg:inline">Google Calendar</span>
           </button>
 
           {/* BANCO DE DADOS STATUS BUTTON */}
