@@ -13,7 +13,8 @@ import {
   Filter,
   Check,
   X,
-  FileText
+  FileText,
+  Sparkles
 } from 'lucide-react';
 import { Consulta, Paciente, Medico, HorarioDisponivel } from '@/lib/db';
 
@@ -95,10 +96,10 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
         <div>
           <h1 className="text-xl font-bold text-white flex items-center space-x-2">
             <CalendarIcon className="h-5 w-5 text-sky-400" />
-            <span>Agendamento de Consultas & Calendário</span>
+            <span>Agendamento de Consultas & Calendários</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Gerenciamento de horários marcados, confirmação e presenças dos pacientes.
+            Sincronização automática com agendas **Google Calendar** e **Microsoft Outlook**.
           </p>
         </div>
 
@@ -170,7 +171,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
       {/* LISTA DE CONSULTAS EM CARDS/TABELA */}
       <div className="glass-card rounded-2xl p-6 border border-slate-800">
         <h2 className="text-sm font-bold text-white mb-4 flex items-center justify-between">
-          <span>Consultas Filtradas ({filteredConsultas.length})</span>
+          <span>Consultas Agendadas ({filteredConsultas.length})</span>
           {selectedDate && <span className="text-xs text-sky-400 font-medium">Data: {selectedDate}</span>}
         </h2>
 
@@ -187,7 +188,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                     <h3 className="text-sm font-bold text-slate-100">{c.paciente_nome}</h3>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                       c.status === 'CONFIRMADA'
@@ -200,6 +201,19 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
                     }`}>
                       {c.status}
                     </span>
+
+                    {/* BADGES DE SINCRONIZAÇÃO GOOGLE & OUTLOOK */}
+                    {c.google_event_id && (
+                      <span className="inline-flex items-center space-x-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30">
+                        <span>🗓️ Google Calendar</span>
+                      </span>
+                    )}
+
+                    {c.outlook_event_id && (
+                      <span className="inline-flex items-center space-x-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                        <span>📧 Outlook</span>
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-1">
@@ -271,7 +285,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
             <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-4">
               <h3 className="text-lg font-bold text-white flex items-center space-x-2">
                 <CalendarIcon className="h-5 w-5 text-sky-400" />
-                <span>Agendar Nova Consulta</span>
+                <span>Agendar Consulta & Sincronizar Calendários</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -356,6 +370,11 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
                 />
               </div>
 
+              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-sky-300 flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-sky-400 shrink-0" />
+                <span>O evento será sincronizado automaticamente no Google Calendar e Outlook das contas conectadas.</span>
+              </div>
+
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
@@ -368,7 +387,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
                   type="submit"
                   className="px-5 py-2 rounded-xl gradient-bg text-white font-semibold shadow-lg shadow-sky-500/20 hover:opacity-90"
                 >
-                  Confirmar Agendamento
+                  Confirmar Agendamento & Sincronizar
                 </button>
               </div>
             </form>

@@ -10,6 +10,7 @@ import { AgendamentoModule } from '@/components/AgendamentoModule';
 import { HorariosModule } from '@/components/HorariosModule';
 import { LoginModal } from '@/components/LoginModal';
 import { DatabaseStatusModal } from '@/components/DatabaseStatusModal';
+import { CalendarIntegrationsModal } from '@/components/CalendarIntegrationsModal';
 import { 
   dbService, 
   Paciente, 
@@ -28,7 +29,9 @@ export default function Home() {
     senha: 'paodequeijo123',
     nome: 'Luiz (Admin)',
     nivel_acesso: 4,
-    cargo: 'ADMIN'
+    cargo: 'ADMIN',
+    google_connected: true,
+    outlook_connected: true
   });
 
   // Data states
@@ -42,6 +45,7 @@ export default function Home() {
   // Modals
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isPacienteModalOpen, setIsPacienteModalOpen] = useState(false);
   const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
 
@@ -137,6 +141,16 @@ export default function Home() {
     await refreshData();
   };
 
+  const handleUserCalendarUpdate = () => {
+    if (currentUser) {
+      setCurrentUser({
+        ...currentUser,
+        google_connected: !currentUser.google_connected,
+        outlook_connected: !currentUser.outlook_connected
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0b1329] text-slate-100 flex flex-col">
       
@@ -146,6 +160,7 @@ export default function Home() {
         onOpenLogin={() => setIsLoginModalOpen(true)}
         onLogout={() => setCurrentUser(null)}
         onOpenDbModal={() => setIsDbModalOpen(true)}
+        onOpenCalendarModal={() => setIsCalendarModalOpen(true)}
       />
 
       {/* CONTAINER PRINCIPAL DAS PÁGINAS */}
@@ -162,7 +177,7 @@ export default function Home() {
         <main className="flex-1 w-full min-w-0">
           {loading ? (
             <div className="glass-card rounded-2xl p-12 text-center text-slate-400 animate-pulse">
-              Carregando dados do banco PostgreSQL...
+              Carregando dados e sincronizações do MEDSY...
             </div>
           ) : (
             <>
@@ -254,6 +269,14 @@ export default function Home() {
       <DatabaseStatusModal
         isOpen={isDbModalOpen}
         onClose={() => setIsDbModalOpen(false)}
+      />
+
+      {/* MODAL INTEGRAÇÃO GOOGLE & OUTLOOK CALENDARS */}
+      <CalendarIntegrationsModal
+        isOpen={isCalendarModalOpen}
+        onClose={() => setIsCalendarModalOpen(false)}
+        currentUser={currentUser}
+        onUpdateUserStatus={handleUserCalendarUpdate}
       />
 
     </div>

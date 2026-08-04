@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Activity, User, LogOut, Shield, Database, Sparkles } from 'lucide-react';
+import { Activity, User, LogOut, Shield, Database, Calendar } from 'lucide-react';
 import { Usuario } from '@/lib/db';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
@@ -10,13 +10,15 @@ interface NavbarProps {
   onOpenLogin: () => void;
   onLogout: () => void;
   onOpenDbModal: () => void;
+  onOpenCalendarModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onOpenLogin,
   onLogout,
-  onOpenDbModal
+  onOpenDbModal,
+  onOpenCalendarModal
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full glass-card border-b border-slate-800/80 px-4 lg:px-8 py-3">
@@ -41,6 +43,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* CONTROLES E PERFIL */}
         <div className="flex items-center space-x-3 sm:space-x-4">
           
+          {/* BOTÃO CALENDÁRIOS GOOGLE / OUTLOOK */}
+          <button
+            onClick={onOpenCalendarModal}
+            className="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-all"
+            title="Conexão com Google Calendar e Outlook"
+          >
+            <Calendar className="h-4 w-4 text-sky-400" />
+            <span className="hidden lg:inline">Agenda Google & Outlook</span>
+          </button>
+
           {/* BANCO DE DADOS STATUS BUTTON */}
           <button
             onClick={onOpenDbModal}
@@ -52,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Database className="h-4 w-4" />
             <span className="hidden md:inline">
-              {isSupabaseConfigured ? 'Supabase Conectado' : 'Modo Local (Configurar Supabase)'}
+              {isSupabaseConfigured ? 'Supabase Conectado' : 'Modo Local'}
             </span>
           </button>
 

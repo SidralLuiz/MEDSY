@@ -8,6 +8,8 @@ export interface Paciente {
   data_nascimento: string;
   telefone: string;
   endereco: string;
+  google_connected?: boolean;
+  outlook_connected?: boolean;
   criado_em?: string;
 }
 
@@ -22,6 +24,12 @@ export interface Medico {
   crm: string;
   especialidade: string;
   senha?: string;
+  google_connected?: boolean;
+  outlook_connected?: boolean;
+  google_access_token?: string;
+  google_refresh_token?: string;
+  outlook_access_token?: string;
+  outlook_refresh_token?: string;
   criado_em?: string;
 }
 
@@ -34,6 +42,8 @@ export interface Secretaria {
   telefone: string;
   endereco: string;
   senha?: string;
+  google_connected?: boolean;
+  outlook_connected?: boolean;
   criado_em?: string;
 }
 
@@ -48,6 +58,8 @@ export interface Consulta {
   horario: string;
   status: 'AGENDADA' | 'CONFIRMADA' | 'REALIZADA' | 'CANCELADA';
   observacoes?: string;
+  google_event_id?: string;
+  outlook_event_id?: string;
   criado_em?: string;
 }
 
@@ -56,7 +68,7 @@ export interface HorarioDisponivel {
   medico_id?: string;
   medico_nome: string;
   especialidade: string;
-  dia_semana: number; // 1 to 7
+  dia_semana: number;
   horario: string;
   disponivel: boolean;
   criado_em?: string;
@@ -67,11 +79,12 @@ export interface Usuario {
   cpf: string;
   senha: string;
   nome: string;
-  nivel_acesso: number; // 4=Admin, 3=Secretaria, 1=Medico
+  nivel_acesso: number;
   cargo: 'ADMIN' | 'SECRETARIA' | 'MEDICO';
+  google_connected?: boolean;
+  outlook_connected?: boolean;
 }
 
-// Dados padrão iniciais (do banco MEDSY2 legado)
 const INITIAL_PACIENTES: Paciente[] = [
   {
     id: 'p1',
@@ -80,7 +93,8 @@ const INITIAL_PACIENTES: Paciente[] = [
     email: 'luiz.sidral@email.com',
     data_nascimento: '17/05/1998',
     telefone: '(47) 99141-5518',
-    endereco: 'Rua 15 de Agosto, 2103'
+    endereco: 'Rua 15 de Agosto, 2103',
+    google_connected: true
   },
   {
     id: 'p2',
@@ -113,7 +127,9 @@ const INITIAL_MEDICOS: Medico[] = [
     endereco: 'Rua 16 de Agosto, 45',
     crm: '123456/SP',
     especialidade: 'Cardiologia',
-    senha: '2103'
+    senha: '2103',
+    google_connected: true,
+    outlook_connected: true
   },
   {
     id: 'm2',
@@ -125,7 +141,8 @@ const INITIAL_MEDICOS: Medico[] = [
     endereco: 'Av. Brasil, 890',
     crm: '654321/SC',
     especialidade: 'Pediatria',
-    senha: '123456'
+    senha: '123456',
+    google_connected: true
   }
 ];
 
@@ -169,7 +186,9 @@ const INITIAL_CONSULTAS: Consulta[] = [
     data_consulta: getTodayString(),
     horario: '09:00',
     status: 'CONFIRMADA',
-    observacoes: 'Exame de rotina e eletrocardiograma'
+    observacoes: 'Exame de rotina e eletrocardiograma',
+    google_event_id: 'g_evt_sample1',
+    outlook_event_id: 'o_evt_sample1'
   },
   {
     id: 'c2',
@@ -181,18 +200,18 @@ const INITIAL_CONSULTAS: Consulta[] = [
     data_consulta: getTomorrowString(),
     horario: '10:00',
     status: 'AGENDADA',
-    observacoes: 'Consulta de acompanhamento'
+    observacoes: 'Consulta de acompanhamento',
+    google_event_id: 'g_evt_sample2'
   }
 ];
 
 const INITIAL_USUARIOS: Usuario[] = [
-  { id: 'u1', cpf: '131', senha: 'paodequeijo123', nome: 'Luiz (Admin)', nivel_acesso: 4, cargo: 'ADMIN' },
-  { id: 'u2', cpf: '51892637000', senha: '2103', nome: 'Dr. Carlos Oliveira', nivel_acesso: 1, cargo: 'MEDICO' },
-  { id: 'u3', cpf: '61928374511', senha: '123456', nome: 'Dra. Ana Beatriz', nivel_acesso: 1, cargo: 'MEDICO' },
+  { id: 'u1', cpf: '131', senha: 'paodequeijo123', nome: 'Luiz (Admin)', nivel_acesso: 4, cargo: 'ADMIN', google_connected: true, outlook_connected: true },
+  { id: 'u2', cpf: '51892637000', senha: '2103', nome: 'Dr. Carlos Oliveira', nivel_acesso: 1, cargo: 'MEDICO', google_connected: true, outlook_connected: true },
+  { id: 'u3', cpf: '61928374511', senha: '123456', nome: 'Dra. Ana Beatriz', nivel_acesso: 1, cargo: 'MEDICO', google_connected: true },
   { id: 'u4', cpf: '05824196300', senha: '2103', nome: 'Luiza Martins', nivel_acesso: 3, cargo: 'SECRETARIA' }
 ];
 
-// Helper local Storage para testes offline/mock
 function loadLocalData<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
   try {
@@ -211,8 +230,6 @@ function saveLocalData<T>(key: string, data: T): void {
     console.error('Erro ao salvar localData', e);
   }
 }
-
-// APIs DO BANCO DE DADOS (SUPABASE OU LOCAL STORAGE FALLBACK)
 
 export const dbService = {
   // PACIENTES
@@ -331,7 +348,7 @@ export const dbService = {
     saveLocalData('secretarias', updated);
   },
 
-  // CONSULTAS
+  // CONSULTAS (COM API ROUTE SYNC DUAL EM GOOGLE E OUTLOOK CALENDAR)
   async getConsultas(): Promise<Consulta[]> {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase.from('consultas').select('*').order('data_consulta', { ascending: true });
@@ -341,12 +358,47 @@ export const dbService = {
   },
 
   async addConsulta(consulta: Omit<Consulta, 'id'>): Promise<Consulta> {
+    const startDateTime = `${consulta.data_consulta}T${consulta.horario}:00`;
+    const endDate = new Date(new Date(startDateTime).getTime() + 40 * 60000);
+    const endDateTime = endDate.toISOString();
+
+    const summary = `Consulta MEDSY: ${consulta.paciente_nome} com ${consulta.medico_nome}`;
+    const description = `Consulta de ${consulta.especialidade} agendada pelo MEDSY.\nObservações: ${consulta.observacoes || 'Nenhuma'}`;
+
+    let googleEventId = 'g_evt_' + Date.now();
+    let outlookEventId = 'o_evt_' + Date.now();
+
+    try {
+      const res = await fetch('/api/calendar/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CREATE',
+          payload: { summary, description, startDateTime, endDateTime }
+        })
+      });
+      if (res.ok) {
+        const resData = await res.json();
+        if (resData.google_event_id) googleEventId = resData.google_event_id;
+        if (resData.outlook_event_id) outlookEventId = resData.outlook_event_id;
+      }
+    } catch (e) {
+      console.warn('Calendar sync api notice:', e);
+    }
+
     const newId = 'c_' + Date.now();
-    const item: Consulta = { ...consulta, id: newId };
+    const item: Consulta = { 
+      ...consulta, 
+      id: newId,
+      google_event_id: googleEventId,
+      outlook_event_id: outlookEventId
+    };
+
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('consultas').insert([consulta]).select().single();
+      const { data, error } = await supabase.from('consultas').insert([item]).select().single();
       if (!error && data) return data;
     }
+
     const current = loadLocalData('consultas', INITIAL_CONSULTAS);
     const updated = [item, ...current];
     saveLocalData('consultas', updated);
@@ -354,10 +406,35 @@ export const dbService = {
   },
 
   async updateConsultaStatus(id: string, status: Consulta['status']): Promise<void> {
+    const consultas = await this.getConsultas();
+    const target = consultas.find(c => c.id === id);
+
+    if (target && status === 'CANCELADA') {
+      try {
+        if (target.google_event_id) {
+          await fetch('/api/calendar/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'DELETE', provider: 'google', eventId: target.google_event_id })
+          });
+        }
+        if (target.outlook_event_id) {
+          await fetch('/api/calendar/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'DELETE', provider: 'outlook', eventId: target.outlook_event_id })
+          });
+        }
+      } catch (e) {
+        console.warn('Calendar delete api notice:', e);
+      }
+    }
+
     if (isSupabaseConfigured && supabase) {
       await supabase.from('consultas').update({ status }).eq('id', id);
       return;
     }
+
     const current = loadLocalData('consultas', INITIAL_CONSULTAS);
     const updated = current.map(c => c.id === id ? { ...c, status } : c);
     saveLocalData('consultas', updated);
@@ -385,7 +462,7 @@ export const dbService = {
     return item;
   },
 
-  // AUTENTICAÇÃO / LOGIN
+  // AUTENTICAÇÃO / LOGIN & CALENDÁRIOS
   async autencicarUsuario(cpf: string, senha: string): Promise<Usuario | null> {
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase
@@ -400,5 +477,24 @@ export const dbService = {
     const usuarios = loadLocalData('usuarios', INITIAL_USUARIOS);
     const user = usuarios.find(u => u.cpf === cpf && u.senha === senha);
     return user || null;
+  },
+
+  async toggleCalendarConnection(userId: string, provider: 'google' | 'outlook', status: boolean): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      const field = provider === 'google' ? 'google_connected' : 'outlook_connected';
+      await supabase.from('usuarios').update({ [field]: status }).eq('id', userId);
+      return;
+    }
+
+    const current = loadLocalData('usuarios', INITIAL_USUARIOS);
+    const updated = current.map(u => {
+      if (u.id === userId) {
+        return provider === 'google' 
+          ? { ...u, google_connected: status }
+          : { ...u, outlook_connected: status };
+      }
+      return u;
+    });
+    saveLocalData('usuarios', updated);
   }
 };

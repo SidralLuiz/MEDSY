@@ -1,6 +1,7 @@
 -- ===================================================
 -- MEDSY 5.0 - SCHEMAS E ESTRUTURA PARA POSTGRESQL / SUPABASE
 -- Converted from legacy MySQL (MEDSY2) to PostgreSQL / Supabase
+-- Updated with Google Calendar & Microsoft Outlook Integration fields
 -- ===================================================
 
 -- 1. EXTENSÕES
@@ -15,6 +16,8 @@ CREATE TABLE IF NOT EXISTS public.pacientes (
     data_nascimento VARCHAR(20),
     telefone VARCHAR(30),
     endereco TEXT,
+    google_connected BOOLEAN DEFAULT FALSE,
+    outlook_connected BOOLEAN DEFAULT FALSE,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -30,6 +33,14 @@ CREATE TABLE IF NOT EXISTS public.medicos (
     crm VARCHAR(30) UNIQUE NOT NULL,
     especialidade VARCHAR(50) NOT NULL,
     senha VARCHAR(100) NOT NULL,
+    google_refresh_token TEXT,
+    google_access_token TEXT,
+    google_token_expiry BIGINT,
+    google_connected BOOLEAN DEFAULT FALSE,
+    outlook_refresh_token TEXT,
+    outlook_access_token TEXT,
+    outlook_token_expiry BIGINT,
+    outlook_connected BOOLEAN DEFAULT FALSE,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -43,11 +54,12 @@ CREATE TABLE IF NOT EXISTS public.secretarias (
     telefone VARCHAR(30),
     endereco TEXT,
     senha VARCHAR(100) NOT NULL,
+    google_connected BOOLEAN DEFAULT FALSE,
+    outlook_connected BOOLEAN DEFAULT FALSE,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5. TABELA DE USUÁRIOS E AUTENTICAÇÃO / NÍVEL DE ACESSO
--- Nível 4: Administrador | Nível 3: Secretária | Nível 1: Médico
 CREATE TABLE IF NOT EXISTS public.usuarios (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cpf VARCHAR(20) UNIQUE NOT NULL,
@@ -55,7 +67,15 @@ CREATE TABLE IF NOT EXISTS public.usuarios (
     nome VARCHAR(100) NOT NULL,
     nivel_acesso INT NOT NULL DEFAULT 1,
     cargo VARCHAR(30) NOT NULL, -- 'ADMIN', 'SECRETARIA', 'MEDICO'
-    ref_id UUID, -- ID opcional apontando para a tabela de médico ou secretária
+    ref_id UUID,
+    google_refresh_token TEXT,
+    google_access_token TEXT,
+    google_token_expiry BIGINT,
+    google_connected BOOLEAN DEFAULT FALSE,
+    outlook_refresh_token TEXT,
+    outlook_access_token TEXT,
+    outlook_token_expiry BIGINT,
+    outlook_connected BOOLEAN DEFAULT FALSE,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -65,8 +85,8 @@ CREATE TABLE IF NOT EXISTS public.horarios_disponiveis (
     medico_id UUID REFERENCES public.medicos(id) ON DELETE CASCADE,
     medico_nome VARCHAR(100) NOT NULL,
     especialidade VARCHAR(50) NOT NULL,
-    dia_semana INT NOT NULL, -- 1=Segunda, 2=Terça... 7=Domingo
-    horario VARCHAR(10) NOT NULL, -- Ex: "08:00", "09:30"
+    dia_semana INT NOT NULL,
+    horario VARCHAR(10) NOT NULL,
     disponivel BOOLEAN DEFAULT TRUE,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -81,14 +101,15 @@ CREATE TABLE IF NOT EXISTS public.consultas (
     especialidade VARCHAR(50) NOT NULL,
     data_consulta DATE NOT NULL,
     horario VARCHAR(10) NOT NULL,
-    status VARCHAR(20) DEFAULT 'AGENDADA', -- 'AGENDADA', 'CONFIRMADA', 'REALIZADA', 'CANCELADA'
+    status VARCHAR(20) DEFAULT 'AGENDADA',
     observacoes TEXT,
+    google_event_id TEXT,
+    outlook_event_id TEXT,
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ===================================================
 -- DADOS INICIAIS DE TESTE / SEED DATA
--- Conversão dos registros SQL legados do MEDSY2
 -- ===================================================
 
 -- Inserir Administrador Padrão
@@ -124,18 +145,3 @@ ON CONFLICT (cpf) DO NOTHING;
 INSERT INTO public.usuarios (cpf, senha, nome, nivel_acesso, cargo) VALUES
 ('05824196300', '2103', 'Luiza Martins (Secretária)', 3, 'SECRETARIA')
 ON CONFLICT (cpf) DO NOTHING;
-
--- Inserir Horários Disponíveis
-INSERT INTO public.horarios_disponiveis (medico_nome, especialidade, dia_semana, horario) VALUES
-('Dr. Carlos Oliveira', 'Cardiologia', 1, '08:00'),
-('Dr. Carlos Oliveira', 'Cardiologia', 1, '09:00'),
-('Dr. Carlos Oliveira', 'Cardiologia', 1, '10:30'),
-('Dr. Carlos Oliveira', 'Cardiologia', 1, '14:00'),
-('Dra. Ana Beatriz', 'Pediatria', 2, '08:30'),
-('Dra. Ana Beatriz', 'Pediatria', 2, '10:00'),
-('Dra. Ana Beatriz', 'Pediatria', 2, '13:30');
-
--- Inserir Consultas Iniciais
-INSERT INTO public.consultas (paciente_nome, medico_nome, especialidade, data_consulta, horario, status, observacoes) VALUES
-('Luiz Fernando Sidral', 'Dr. Carlos Oliveira', 'Cardiologia', CURRENT_DATE, '09:00', 'CONFIRMADA', 'Exame de rotina e eletrocardiograma'),
-('Maria Silva', 'Dra. Ana Beatriz', 'Pediatria', CURRENT_DATE + INTERVAL '1 day', '10:00', 'AGENDADA', 'Consulta pediátrica de acompanhamento');
