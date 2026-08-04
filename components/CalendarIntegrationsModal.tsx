@@ -25,6 +25,18 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
   const isGoogleConnected = currentUser?.google_connected ?? true;
   const isOutlookConnected = currentUser?.outlook_connected ?? true;
 
+  const handleConnectGoogle = () => {
+    setLoadingGoogle(true);
+    const userId = currentUser?.id || 'u1';
+    window.location.href = `/api/auth/google?userId=${userId}`;
+  };
+
+  const handleConnectOutlook = () => {
+    setLoadingOutlook(true);
+    const userId = currentUser?.id || 'u1';
+    window.location.href = `/api/auth/outlook?userId=${userId}`;
+  };
+
   const handleToggleGoogle = async () => {
     if (!currentUser) return;
     setLoadingGoogle(true);
@@ -82,27 +94,28 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
               </div>
             </div>
 
-            <button
-              onClick={handleToggleGoogle}
-              disabled={loadingGoogle}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all shrink-0 ${
-                isGoogleConnected
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-                  : 'gradient-bg text-white shadow-lg shadow-sky-500/20'
-              }`}
-            >
-              {isGoogleConnected ? (
-                <>
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Conectado</span>
-                </>
-              ) : (
-                <>
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Conectar Google</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleConnectGoogle}
+                disabled={loadingGoogle}
+                className="px-4 py-2 rounded-xl text-xs font-semibold gradient-bg text-white shadow-lg shadow-sky-500/20 hover:opacity-90 flex items-center space-x-1 shrink-0"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span>Conectar Google</span>
+              </button>
+
+              <button
+                onClick={handleToggleGoogle}
+                className={`p-2 rounded-xl text-xs border transition-all ${
+                  isGoogleConnected
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                }`}
+                title="Alternar Status"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* CARD 2: MICROSOFT OUTLOOK CALENDAR */}
@@ -124,27 +137,28 @@ export const CalendarIntegrationsModal: React.FC<CalendarIntegrationsModalProps>
               </div>
             </div>
 
-            <button
-              onClick={handleToggleOutlook}
-              disabled={loadingOutlook}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all shrink-0 ${
-                isOutlookConnected
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30'
-                  : 'gradient-bg text-white shadow-lg shadow-purple-500/20'
-              }`}
-            >
-              {isOutlookConnected ? (
-                <>
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>Conectado</span>
-                </>
-              ) : (
-                <>
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Conectar Outlook</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleConnectOutlook}
+                disabled={loadingOutlook}
+                className="px-4 py-2 rounded-xl text-xs font-semibold gradient-bg text-white shadow-lg shadow-purple-500/20 hover:opacity-90 flex items-center space-x-1 shrink-0"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span>Conectar Outlook</span>
+              </button>
+
+              <button
+                onClick={handleToggleOutlook}
+                className={`p-2 rounded-xl text-xs border transition-all ${
+                  isOutlookConnected
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                }`}
+                title="Alternar Status"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* DICA DE SINCRONIZAÇÃO */}
