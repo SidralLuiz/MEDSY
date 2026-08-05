@@ -11,8 +11,10 @@ import {
   Sparkles, 
   Activity,
   Ticket,
-  CheckCircle2,
-  BellRing
+  BellRing,
+  Play,
+  Sliders,
+  Check
 } from 'lucide-react';
 import { ItemFila } from '@/lib/db';
 
@@ -23,6 +25,12 @@ interface PainelTvRecepcaoProps {
 export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>('');
+  const [speechRate, setSpeechRate] = useState<number>(0.88);
+  const [speechPitch, setSpeechPitch] = useState<number>(1.05);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const lastCalledIdRef = useRef<string | null>(null);
 
@@ -33,7 +41,31 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
     .slice(-4)
     .reverse();
 
-  // Função para tocar um sinal sonoro agradável de hospital/aeroporto (Web Audio API)
+  // Carregar todas as vozes do navegador
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        // Filtra preferencialmente vozes em português, mas lista todas se necessário
+        const ptVoices = voices.filter(v => v.lang.includes('pt') || v.lang.includes('BR'));
+        const finalVoices = ptVoices.length > 0 ? ptVoices : voices;
+        setAvailableVoices(finalVoices);
+
+        if (finalVoices.length > 0 && !selectedVoiceURI) {
+          // Escolhe uma voz padrão em português
+          const defaultVoice = finalVoices.find(v => 
+            v.name.includes('Google') || v.name.includes('Luciana') || v.name.includes('Francisca') || v.name.includes('Natural')
+          ) || finalVoices[0];
+          setSelectedVoiceURI(defaultVoice.voiceURI);
+        }
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
+  // Sinal Sonoro Chime Hospitalar
   const playHospitalChime = () => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -54,7 +86,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
       osc1.start(now);
       osc1.stop(now + 0.8);
 
-      // Nota 2 (E5 - 659.25Hz) - toca 0.25s depois
+      // Nota 2 (E5 - 659.25Hz)
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'sine';
@@ -70,44 +102,43 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
     }
   };
 
-  // Web Speech API com Voz Humanizada e Pausas Naturais
+  // Função para testar voz com frase demonstrativa
+  const handleTestVoice = (customPhrase?: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      playHospitalChime();
+
+      setTimeout(() => {
+        const frase = customPhrase || "Atenção. Senha... N-001. Paciente... Luiz Fernando Sidral. Por favor, dirija-se ao... Consultório 1.";
+        const utterance = new SpeechSynthesisUtterance(frase);
+        utterance.lang = 'pt-BR';
+        utterance.rate = speechRate;
+        utterance.pitch = speechPitch;
+
+        const voiceObj = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+        if (voiceObj) {
+          utterance.voice = voiceObj;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }, 600);
+    }
+  };
+
+  // Efeito ao chamar nova senha
   useEffect(() => {
     if (senhaEmAtendimento && senhaEmAtendimento.id !== lastCalledIdRef.current) {
       lastCalledIdRef.current = senhaEmAtendimento.id;
 
-      if (voiceEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Parar falas anteriores
+      if (voiceEnabled) {
+        const partesSenha = senhaEmAtendimento.senha.split('-');
+        const senhaFalada = partesSenha.length > 1 
+          ? `${partesSenha[0]}, ${parseInt(partesSenha[1], 10)}` 
+          : senhaEmAtendimento.senha;
 
-        // Toca o Chime Sonoro Hospitalar 0.5s antes da fala
-        playHospitalChime();
-
-        setTimeout(() => {
-          // Formatação com pausas naturais para cadência humana
-          const partesSenha = senhaEmAtendimento.senha.split('-');
-          const senhaFalada = partesSenha.length > 1 
-            ? `${partesSenha[0]}, ${parseInt(partesSenha[1], 10)}` 
-            : senhaEmAtendimento.senha;
-
-          const textoFala = `Atenção. Senha... ${senhaFalada}. Paciente... ${senhaEmAtendimento.paciente_nome}. Por favor, dirija-se ao... ${senhaEmAtendimento.consultorio || 'Consultório 1'}.`;
-
-          const utterance = new SpeechSynthesisUtterance(textoFala);
-          utterance.lang = 'pt-BR';
-          utterance.rate = 0.88; // Ritmo mais calmo e humanizado
-          utterance.pitch = 1.05; // Tom de voz mais acolhedor
-
-          // Busca vozes em português natural disponíveis no navegador
-          const voices = window.speechSynthesis.getVoices();
-          const ptVoice = voices.find(v => 
-            (v.lang.includes('pt') || v.lang.includes('BR')) && 
-            (v.name.includes('Google') || v.name.includes('Luciana') || v.name.includes('Francisca') || v.name.includes('Helena') || v.name.includes('Natural'))
-          ) || voices.find(v => v.lang.includes('pt'));
-
-          if (ptVoice) {
-            utterance.voice = ptVoice;
-          }
-
-          window.speechSynthesis.speak(utterance);
-        }, 600);
+        const fraseChamada = `Atenção. Senha... ${senhaFalada}. Paciente... ${senhaEmAtendimento.paciente_nome}. Por favor, dirija-se ao... ${senhaEmAtendimento.consultorio || 'Consultório 1'}.`;
+        
+        handleTestVoice(fraseChamada);
       }
     }
   }, [senhaEmAtendimento, voiceEnabled]);
@@ -148,7 +179,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 blur-[140px] pointer-events-none" />
 
       {/* CABEÇALHO DO TELÃO DE RECEPÇÃO */}
-      <div className="relative z-10 flex items-center justify-between border-b border-slate-800/80 pb-6">
+      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div className="flex items-center space-x-4">
           <div className="h-14 w-14 rounded-2xl gradient-bg flex items-center justify-center shadow-2xl shadow-sky-500/30">
             <Activity className="h-8 w-8 text-white animate-pulse" />
@@ -160,16 +191,27 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
         </div>
 
         {/* CONTROLES DE VOZ E TELA CHEIA */}
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
           
-          {/* TESTAR SINAL SONORO */}
+          {/* BOTÃO TESTAR VOZ SELECIONADA */}
           <button
-            onClick={playHospitalChime}
-            className="flex items-center space-x-1.5 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold"
-            title="Testar Sinal Sonoro Chime"
+            onClick={() => handleTestVoice()}
+            className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-semibold"
+            title="Ouvir Teste de Voz"
           >
-            <BellRing className="h-3.5 w-3.5 text-sky-400" />
-            <span>Testar Chime</span>
+            <Play className="h-3.5 w-3.5 text-sky-400 fill-sky-400" />
+            <span>Ouvir Voz</span>
+          </button>
+
+          {/* PAINEL DE AJUSTE DE VOZES */}
+          <button
+            onClick={() => setShowVoiceSettings(!showVoiceSettings)}
+            className={`flex items-center space-x-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+              showVoiceSettings ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' : 'bg-slate-800 text-slate-300 border-slate-700'
+            }`}
+          >
+            <Sliders className="h-3.5 w-3.5 text-purple-400" />
+            <span>Selecionar Voz</span>
           </button>
 
           {/* TOGGLE VOZ SINTETIZADA */}
@@ -183,7 +225,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
             title="Ativar/Desativar Anúncio de Voz"
           >
             {voiceEnabled ? <Volume2 className="h-4 w-4 text-emerald-400 animate-bounce" /> : <VolumeX className="h-4 w-4" />}
-            <span>{voiceEnabled ? 'Voz Humanizada Ativa 🔊' : 'Voz Muta 🔇'}</span>
+            <span>{voiceEnabled ? 'Voz Sonora Ativa 🔊' : 'Voz Muta 🔇'}</span>
           </button>
 
           {/* TOGGLE TELA CHEIA (FULLSCREEN) */}
@@ -197,6 +239,86 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
 
         </div>
       </div>
+
+      {/* SELETOR DE VOZES E SLIDERS DE CADÊNCIA (MODAL/CARD EXPANSÍVEL) */}
+      {showVoiceSettings && (
+        <div className="relative z-20 glass-card rounded-2xl p-5 border border-purple-500/30 space-y-4 my-4 animate-in fade-in slide-in-from-top-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-purple-300 flex items-center space-x-2">
+              <Sliders className="h-4 w-4" />
+              <span>Configurações & Seleção de Voz Sintetizada</span>
+            </h4>
+            <span className="text-[10px] text-slate-400">{availableVoices.length} voz(es) em Português instalada(s)</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            
+            {/* DROPDOWN DE VOZES */}
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">Selecione a Voz do Sistema:</label>
+              <select
+                value={selectedVoiceURI}
+                onChange={(e) => {
+                  setSelectedVoiceURI(e.target.value);
+                  setTimeout(() => handleTestVoice(), 100);
+                }}
+                className="w-full glass-input px-3 py-2 rounded-xl text-xs"
+              >
+                {availableVoices.map(v => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* SLIDER DE VELOCIDADE */}
+            <div>
+              <div className="flex items-center justify-between font-semibold text-slate-300 mb-1">
+                <span>Velocidade da Fala:</span>
+                <span className="text-sky-400 font-mono">{speechRate}x</span>
+              </div>
+              <input
+                type="range"
+                min="0.7"
+                max="1.2"
+                step="0.05"
+                value={speechRate}
+                onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                className="w-full accent-sky-400"
+              />
+            </div>
+
+            {/* SLIDER DE TOM DE VOZ */}
+            <div>
+              <div className="flex items-center justify-between font-semibold text-slate-300 mb-1">
+                <span>Tom de Voz (Pitch):</span>
+                <span className="text-purple-400 font-mono">{speechPitch}</span>
+              </div>
+              <input
+                type="range"
+                min="0.8"
+                max="1.3"
+                step="0.05"
+                value={speechPitch}
+                onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
+                className="w-full accent-purple-400"
+              />
+            </div>
+
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button
+              onClick={() => handleTestVoice()}
+              className="px-4 py-2 rounded-xl gradient-bg text-white font-bold text-xs flex items-center space-x-1.5 shadow-md"
+            >
+              <Play className="h-3.5 w-3.5 fill-white" />
+              <span>Testar Esta Voz Agora</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ÁREA CENTRAL PRINCIPAL: EXIBIÇÃO DA SENHA E NOME */}
       <div className="relative z-10 my-8 flex-1 flex flex-col justify-center items-center text-center space-y-6">
