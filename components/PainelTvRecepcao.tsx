@@ -14,7 +14,9 @@ import {
   BellRing,
   Play,
   Sliders,
-  Check
+  Check,
+  Download,
+  Info
 } from 'lucide-react';
 import { ItemFila } from '@/lib/db';
 
@@ -28,6 +30,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>('');
   const [speechRate, setSpeechRate] = useState<number>(0.88);
+  const [showDownloadHelp, setShowDownloadHelp] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const lastCalledIdRef = useRef<string | null>(null);
@@ -39,7 +42,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
     .slice(-4)
     .reverse();
 
-  // Carregar todas as vozes do navegador
+  // Carregar todas as vozes disponíveis no OS/Navegador
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       const loadVoices = () => {
@@ -239,12 +242,50 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
             >
               {availableVoices.map(v => (
                 <option key={v.voiceURI} value={v.voiceURI}>
-                  {v.name} ({v.lang})
+                  🎙️ {v.name} ({v.lang})
                 </option>
               ))}
             </select>
+
+            <button
+              onClick={() => setShowDownloadHelp(!showDownloadHelp)}
+              className="px-3 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-semibold shrink-0 flex items-center space-x-1"
+              title="Como baixar mais vozes gratuitas HD no Mac/Windows"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">+ Vozes Grátis</span>
+            </button>
           </div>
         </div>
+
+        {/* GUIA DE COMO BAIXAR MAIS VOZES GRATUITAS NO MAC/WINDOWS */}
+        {showDownloadHelp && (
+          <div className="glass-card rounded-2xl p-5 border border-purple-500/40 bg-slate-900/95 space-y-3 text-xs animate-in fade-in">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-purple-300 flex items-center space-x-2">
+                <Info className="h-4 w-4 text-purple-400" />
+                <span>Como Baixar Mais Vozes Neurais / HD Gratuitamente no Mac / Windows:</span>
+              </h4>
+              <button onClick={() => setShowDownloadHelp(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-300 text-[11px] leading-relaxed">
+              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+                <p className="font-bold text-sky-400"> No macOS (MacBook / iMac):</p>
+                <p>1. Abra <strong>Ajustes do Sistema</strong> ➔ <strong>Acessibilidade</strong> ➔ <strong>Conteúdo Falado</strong>.</p>
+                <p>2. Clique em <strong>Voz do Sistema</strong> ➔ <strong>Gerenciar Vozes...</strong></p>
+                <p>3. Selecione <strong>Português (Brasil)</strong> e baixe gratuitamente as vozes HD: <strong>Luciana (Aprimorada)</strong>, <strong>Felipe (Aprimorado)</strong> ou <strong>Fernanda</strong>.</p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+                <p className="font-bold text-emerald-400">🪟 No Windows (10 / 11):</p>
+                <p>1. Abra <strong>Configurações</strong> ➔ <strong>Hora e Idioma</strong> ➔ <strong>Fala</strong>.</p>
+                <p>2. Em <strong>Gerenciar vozes</strong>, clique em <strong>Adicionar vozes</strong>.</p>
+                <p>3. Pesquise por <strong>Português (Brasil)</strong> e instale o pacote de fala natural gratuito (Maria / Daniel).</p>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
 

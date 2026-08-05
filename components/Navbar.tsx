@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Activity, User, LogOut, Shield, Calendar } from 'lucide-react';
+import { Activity, User, LogOut, ShieldCheck, Calendar } from 'lucide-react';
 import { Usuario } from '@/lib/db';
 
 interface NavbarProps {
@@ -16,7 +16,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onOpenLogin,
   onLogout,
-  onOpenCalendarModal
+  onOpenCalendarModal,
+  onOpenDbModal
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full glass-card border-b border-slate-800/80 px-6 lg:px-12 py-3.5">
@@ -39,16 +40,26 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* CONTROLES E PERFIL */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           
           {/* BOTÃO GOOGLE CALENDAR */}
           <button
             onClick={onOpenCalendarModal}
-            className="flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-all shadow-sm"
+            className="flex items-center space-x-2 text-xs font-semibold px-3.5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-all shadow-sm"
             title="Sincronização com Google Calendar"
           >
             <Calendar className="h-4 w-4 text-sky-400" />
-            <span>Google Calendar</span>
+            <span className="hidden sm:inline">Google Calendar</span>
+          </button>
+
+          {/* BOTÃO CONFIGURAÇÕES & SEGURANÇA (AO LADO DO GOOGLE CALENDAR) */}
+          <button
+            onClick={onOpenDbModal}
+            className="flex items-center space-x-2 text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-200 hover:bg-slate-700 transition-all shadow-sm"
+            title="Configurações & Segurança do Sistema"
+          >
+            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <span className="hidden sm:inline">Configurações do Sistema</span>
           </button>
 
           {/* PERFIL / LOGIN */}
