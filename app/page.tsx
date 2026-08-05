@@ -11,6 +11,7 @@ import { HorariosModule } from '@/components/HorariosModule';
 import { FinanceiroModule } from '@/components/FinanceiroModule';
 import { AtendimentoModule } from '@/components/AtendimentoModule';
 import { FilaAtendimentoModule } from '@/components/FilaAtendimentoModule';
+import { PainelTvRecepcao } from '@/components/PainelTvRecepcao';
 import { LoginModal } from '@/components/LoginModal';
 import { LoginPage } from '@/components/LoginPage';
 import { DatabaseStatusModal } from '@/components/DatabaseStatusModal';
@@ -331,6 +332,10 @@ export default function Home() {
                   onSaveProntuario={handleSaveProntuario}
                   onConcluirFila={handleConcluirFila}
                 />
+              )}
+
+              {activeTab === 'paineltv' && (
+                <PainelTvRecepcao fila={fila} />
               )}
 
               {activeTab === 'fila' && (

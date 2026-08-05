@@ -11,12 +11,13 @@ import {
   Stethoscope,
   Ticket,
   DollarSign,
+  Tv,
   Lock,
   ChevronRight
 } from 'lucide-react';
 import { Usuario } from '@/lib/db';
 
-export type ActiveTab = 'dashboard' | 'atendimento' | 'fila' | 'agendamentos' | 'financeiro' | 'pacientes' | 'equipe' | 'horarios' | 'database';
+export type ActiveTab = 'dashboard' | 'atendimento' | 'paineltv' | 'fila' | 'agendamentos' | 'financeiro' | 'pacientes' | 'equipe' | 'horarios' | 'database';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -50,11 +51,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       desc: 'Prontuário & Chamada'
     },
     {
+      id: 'paineltv' as ActiveTab,
+      label: 'Painel TV Recepção',
+      icon: Tv,
+      minLevel: 1,
+      desc: 'Telão & Anúncio por Voz'
+    },
+    {
       id: 'fila' as ActiveTab,
       label: 'Fila de Atendimento',
       icon: Ticket,
       minLevel: 1,
-      desc: 'Totem & Painel de Senhas'
+      desc: 'Totem de Senhas Presencial'
     },
     {
       id: 'agendamentos' as ActiveTab,
