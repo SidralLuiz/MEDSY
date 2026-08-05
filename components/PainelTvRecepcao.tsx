@@ -28,8 +28,6 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>('');
   const [speechRate, setSpeechRate] = useState<number>(0.88);
-  const [speechPitch, setSpeechPitch] = useState<number>(1.05);
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const lastCalledIdRef = useRef<string | null>(null);
@@ -46,13 +44,11 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices();
-        // Filtra preferencialmente vozes em português, mas lista todas se necessário
         const ptVoices = voices.filter(v => v.lang.includes('pt') || v.lang.includes('BR'));
         const finalVoices = ptVoices.length > 0 ? ptVoices : voices;
         setAvailableVoices(finalVoices);
 
         if (finalVoices.length > 0 && !selectedVoiceURI) {
-          // Escolhe uma voz padrão em português
           const defaultVoice = finalVoices.find(v => 
             v.name.includes('Google') || v.name.includes('Luciana') || v.name.includes('Francisca') || v.name.includes('Natural')
           ) || finalVoices[0];
@@ -103,7 +99,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
   };
 
   // Função para testar voz com frase demonstrativa
-  const handleTestVoice = (customPhrase?: string) => {
+  const handleTestVoice = (customPhrase?: string, voiceURIOverride?: string) => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       playHospitalChime();
@@ -113,9 +109,10 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
         const utterance = new SpeechSynthesisUtterance(frase);
         utterance.lang = 'pt-BR';
         utterance.rate = speechRate;
-        utterance.pitch = speechPitch;
+        utterance.pitch = 1.05;
 
-        const voiceObj = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+        const uriToUse = voiceURIOverride || selectedVoiceURI;
+        const voiceObj = availableVoices.find(v => v.voiceURI === uriToUse);
         if (voiceObj) {
           utterance.voice = voiceObj;
         }
@@ -179,146 +176,77 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 blur-[140px] pointer-events-none" />
 
       {/* CABEÇALHO DO TELÃO DE RECEPÇÃO */}
-      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
-        <div className="flex items-center space-x-4">
-          <div className="h-14 w-14 rounded-2xl gradient-bg flex items-center justify-center shadow-2xl shadow-sky-500/30">
-            <Activity className="h-8 w-8 text-white animate-pulse" />
-          </div>
-          <div>
-            <span className="text-3xl font-black tracking-wider gradient-text">MEDSY</span>
-            <p className="text-xs text-slate-400 font-semibold tracking-wide">PAINEL DE CHAMADA DE PACIENTES</p>
-          </div>
-        </div>
-
-        {/* CONTROLES DE VOZ E TELA CHEIA */}
-        <div className="flex flex-wrap items-center gap-3">
-          
-          {/* BOTÃO TESTAR VOZ SELECIONADA */}
-          <button
-            onClick={() => handleTestVoice()}
-            className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-semibold"
-            title="Ouvir Teste de Voz"
-          >
-            <Play className="h-3.5 w-3.5 text-sky-400 fill-sky-400" />
-            <span>Ouvir Voz</span>
-          </button>
-
-          {/* PAINEL DE AJUSTE DE VOZES */}
-          <button
-            onClick={() => setShowVoiceSettings(!showVoiceSettings)}
-            className={`flex items-center space-x-1.5 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
-              showVoiceSettings ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' : 'bg-slate-800 text-slate-300 border-slate-700'
-            }`}
-          >
-            <Sliders className="h-3.5 w-3.5 text-purple-400" />
-            <span>Selecionar Voz</span>
-          </button>
-
-          {/* TOGGLE VOZ SINTETIZADA */}
-          <button
-            onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-              voiceEnabled
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-lg shadow-emerald-500/10'
-                : 'bg-slate-800 text-slate-400 border-slate-700'
-            }`}
-            title="Ativar/Desativar Anúncio de Voz"
-          >
-            {voiceEnabled ? <Volume2 className="h-4 w-4 text-emerald-400 animate-bounce" /> : <VolumeX className="h-4 w-4" />}
-            <span>{voiceEnabled ? 'Voz Sonora Ativa 🔊' : 'Voz Muta 🔇'}</span>
-          </button>
-
-          {/* TOGGLE TELA CHEIA (FULLSCREEN) */}
-          <button
-            onClick={toggleFullscreen}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl gradient-bg text-white font-bold text-xs shadow-xl shadow-sky-500/30 hover:scale-105 active:scale-95 transition-all"
-          >
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-            <span>{isFullscreen ? 'Sair da Tela Cheia' : 'Projetar em Tela Cheia 📺'}</span>
-          </button>
-
-        </div>
-      </div>
-
-      {/* SELETOR DE VOZES E SLIDERS DE CADÊNCIA (MODAL/CARD EXPANSÍVEL) */}
-      {showVoiceSettings && (
-        <div className="relative z-20 glass-card rounded-2xl p-5 border border-purple-500/30 space-y-4 my-4 animate-in fade-in slide-in-from-top-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-purple-300 flex items-center space-x-2">
-              <Sliders className="h-4 w-4" />
-              <span>Configurações & Seleção de Voz Sintetizada</span>
-            </h4>
-            <span className="text-[10px] text-slate-400">{availableVoices.length} voz(es) em Português instalada(s)</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            
-            {/* DROPDOWN DE VOZES */}
-            <div>
-              <label className="block font-semibold text-slate-300 mb-1">Selecione a Voz do Sistema:</label>
-              <select
-                value={selectedVoiceURI}
-                onChange={(e) => {
-                  setSelectedVoiceURI(e.target.value);
-                  setTimeout(() => handleTestVoice(), 100);
-                }}
-                className="w-full glass-input px-3 py-2 rounded-xl text-xs"
-              >
-                {availableVoices.map(v => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {v.name} ({v.lang})
-                  </option>
-                ))}
-              </select>
+      <div className="relative z-10 space-y-4 border-b border-slate-800/80 pb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="h-14 w-14 rounded-2xl gradient-bg flex items-center justify-center shadow-2xl shadow-sky-500/30">
+              <Activity className="h-8 w-8 text-white animate-pulse" />
             </div>
-
-            {/* SLIDER DE VELOCIDADE */}
             <div>
-              <div className="flex items-center justify-between font-semibold text-slate-300 mb-1">
-                <span>Velocidade da Fala:</span>
-                <span className="text-sky-400 font-mono">{speechRate}x</span>
-              </div>
-              <input
-                type="range"
-                min="0.7"
-                max="1.2"
-                step="0.05"
-                value={speechRate}
-                onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                className="w-full accent-sky-400"
-              />
+              <span className="text-3xl font-black tracking-wider gradient-text">MEDSY</span>
+              <p className="text-xs text-slate-400 font-semibold tracking-wide">PAINEL DE CHAMADA DE PACIENTES</p>
             </div>
-
-            {/* SLIDER DE TOM DE VOZ */}
-            <div>
-              <div className="flex items-center justify-between font-semibold text-slate-300 mb-1">
-                <span>Tom de Voz (Pitch):</span>
-                <span className="text-purple-400 font-mono">{speechPitch}</span>
-              </div>
-              <input
-                type="range"
-                min="0.8"
-                max="1.3"
-                step="0.05"
-                value={speechPitch}
-                onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
-                className="w-full accent-purple-400"
-              />
-            </div>
-
           </div>
 
-          <div className="flex justify-end pt-1">
+          {/* CONTROLES PRINCIPAIS */}
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => handleTestVoice()}
-              className="px-4 py-2 rounded-xl gradient-bg text-white font-bold text-xs flex items-center space-x-1.5 shadow-md"
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl gradient-bg text-white text-xs font-bold shadow-lg shadow-sky-500/20 hover:opacity-90"
             >
               <Play className="h-3.5 w-3.5 fill-white" />
-              <span>Testar Esta Voz Agora</span>
+              <span>Ouvir Voz Selecionada</span>
+            </button>
+
+            <button
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                voiceEnabled
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-lg shadow-emerald-500/10'
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}
+            >
+              {voiceEnabled ? <Volume2 className="h-4 w-4 text-emerald-400 animate-bounce" /> : <VolumeX className="h-4 w-4" />}
+              <span>{voiceEnabled ? 'Voz Ativa 🔊' : 'Voz Muta 🔇'}</span>
+            </button>
+
+            <button
+              onClick={toggleFullscreen}
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition-all"
+            >
+              {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              <span>{isFullscreen ? 'Sair da Tela Cheia' : 'Projetar em Tela Cheia 📺'}</span>
             </button>
           </div>
         </div>
-      )}
+
+        {/* BARRA DE SELEÇÃO DE VOZES SEMPRE VISÍVEL */}
+        <div className="glass-card rounded-2xl p-4 border border-purple-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
+          <div className="flex items-center space-x-2">
+            <Sliders className="h-4 w-4 text-purple-400 shrink-0" />
+            <span className="font-bold text-purple-300">Escolher Voz de Narração:</span>
+          </div>
+
+          <div className="flex-1 w-full sm:w-auto flex items-center space-x-3">
+            <select
+              value={selectedVoiceURI}
+              onChange={(e) => {
+                const newUri = e.target.value;
+                setSelectedVoiceURI(newUri);
+                handleTestVoice(undefined, newUri);
+              }}
+              className="w-full glass-input px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-100 bg-slate-900/90 border border-slate-700"
+            >
+              {availableVoices.map(v => (
+                <option key={v.voiceURI} value={v.voiceURI}>
+                  {v.name} ({v.lang})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+      </div>
 
       {/* ÁREA CENTRAL PRINCIPAL: EXIBIÇÃO DA SENHA E NOME */}
       <div className="relative z-10 my-8 flex-1 flex flex-col justify-center items-center text-center space-y-6">
@@ -356,7 +284,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
                 <span className="px-4 py-1 rounded-xl bg-sky-500/20 text-white border border-sky-500/40 font-black">
                   {senhaEmAtendimento.consultorio || 'Consultório 1'}
                 </span>
-                <span>com {senhaEmAtendimento.medico_nome || 'Dr. Médico'}</span>
+                <span>com {senhaEmAtendimento.medico_nome || 'Dr. Carlos Oliveira'}</span>
               </div>
             </div>
 
