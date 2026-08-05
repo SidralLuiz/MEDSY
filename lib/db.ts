@@ -228,8 +228,12 @@ export const dbService = {
   // PACIENTES
   async getPacientes(): Promise<Paciente[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('pacientes').select('*').order('nome');
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('pacientes').select('*').order('nome');
+        if (!error && data) return data;
+      } catch (err) {
+        console.warn('Supabase catch fallback pac:', err);
+      }
     }
     return [...mockPacientes];
   },
@@ -238,23 +242,38 @@ export const dbService = {
     const newId = crypto.randomUUID();
     const newP = { ...p, id: newId, google_connected: false, outlook_connected: false };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('pacientes').insert([newP]).select().single();
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('pacientes').insert([newP]).select().single();
+        if (!error && data) {
+          mockPacientes.unshift(data);
+          return data;
+        }
+      } catch (err) {
+        console.warn('Erro ao inserir paciente no Supabase, salvando localmente:', err);
+      }
     }
-    mockPacientes.push(newP);
+    mockPacientes.unshift(newP);
     return newP;
   },
 
   async updatePaciente(id: string, p: Partial<Paciente>): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('pacientes').update(p).eq('id', id);
+      try {
+        await supabase.from('pacientes').update(p).eq('id', id);
+      } catch (err) {
+        console.warn('Err update Supabase:', err);
+      }
     }
     mockPacientes = mockPacientes.map(item => item.id === id ? { ...item, ...p } : item);
   },
 
   async deletePaciente(id: string): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('pacientes').delete().eq('id', id);
+      try {
+        await supabase.from('pacientes').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Err delete Supabase:', err);
+      }
     }
     mockPacientes = mockPacientes.filter(p => p.id !== id);
   },
@@ -262,8 +281,10 @@ export const dbService = {
   // MÉDICOS
   async getMedicos(): Promise<Medico[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('medicos').select('*').order('nome');
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('medicos').select('*').order('nome');
+        if (!error && data) return data;
+      } catch (err) {}
     }
     return [...mockMedicos];
   },
@@ -272,21 +293,24 @@ export const dbService = {
     const newId = crypto.randomUUID();
     const newM = { ...m, id: newId, google_connected: false, outlook_connected: false };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('medicos').insert([newM]).select().single();
-      if (!error && data) {
-        await supabase.from('usuarios').insert([{
-          id: crypto.randomUUID(),
-          cpf: newM.cpf,
-          senha: newM.senha || '123456',
-          nome: newM.nome,
-          nivel_acesso: 1,
-          cargo: 'MEDICO',
-          ref_id: newM.id
-        }]);
-        return data;
-      }
+      try {
+        const { data, error } = await supabase.from('medicos').insert([newM]).select().single();
+        if (!error && data) {
+          await supabase.from('usuarios').insert([{
+            id: crypto.randomUUID(),
+            cpf: newM.cpf,
+            senha: newM.senha || '123456',
+            nome: newM.nome,
+            nivel_acesso: 1,
+            cargo: 'MEDICO',
+            ref_id: newM.id
+          }]);
+          mockMedicos.unshift(data);
+          return data;
+        }
+      } catch (err) {}
     }
-    mockMedicos.push(newM);
+    mockMedicos.unshift(newM);
     mockUsuarios.push({
       id: crypto.randomUUID(),
       cpf: newM.cpf,
@@ -301,14 +325,18 @@ export const dbService = {
 
   async updateMedico(id: string, m: Partial<Medico>): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('medicos').update(m).eq('id', id);
+      try {
+        await supabase.from('medicos').update(m).eq('id', id);
+      } catch (err) {}
     }
     mockMedicos = mockMedicos.map(item => item.id === id ? { ...item, ...m } : item);
   },
 
   async deleteMedico(id: string): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('medicos').delete().eq('id', id);
+      try {
+        await supabase.from('medicos').delete().eq('id', id);
+      } catch (err) {}
     }
     mockMedicos = mockMedicos.filter(m => m.id !== id);
   },
@@ -316,8 +344,10 @@ export const dbService = {
   // SECRETÁRIAS
   async getSecretarias(): Promise<Secretaria[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('secretarias').select('*').order('nome');
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('secretarias').select('*').order('nome');
+        if (!error && data) return data;
+      } catch (err) {}
     }
     return [...mockSecretarias];
   },
@@ -326,21 +356,24 @@ export const dbService = {
     const newId = crypto.randomUUID();
     const newS = { ...s, id: newId, google_connected: false, outlook_connected: false };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('secretarias').insert([newS]).select().single();
-      if (!error && data) {
-        await supabase.from('usuarios').insert([{
-          id: crypto.randomUUID(),
-          cpf: newS.cpf,
-          senha: newS.senha || '123456',
-          nome: newS.nome,
-          nivel_acesso: 3,
-          cargo: 'SECRETARIA',
-          ref_id: newS.id
-        }]);
-        return data;
-      }
+      try {
+        const { data, error } = await supabase.from('secretarias').insert([newS]).select().single();
+        if (!error && data) {
+          await supabase.from('usuarios').insert([{
+            id: crypto.randomUUID(),
+            cpf: newS.cpf,
+            senha: newS.senha || '123456',
+            nome: newS.nome,
+            nivel_acesso: 3,
+            cargo: 'SECRETARIA',
+            ref_id: newS.id
+          }]);
+          mockSecretarias.unshift(data);
+          return data;
+        }
+      } catch (err) {}
     }
-    mockSecretarias.push(newS);
+    mockSecretarias.unshift(newS);
     mockUsuarios.push({
       id: crypto.randomUUID(),
       cpf: newS.cpf,
@@ -355,7 +388,9 @@ export const dbService = {
 
   async deleteSecretaria(id: string): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('secretarias').delete().eq('id', id);
+      try {
+        await supabase.from('secretarias').delete().eq('id', id);
+      } catch (err) {}
     }
     mockSecretarias = mockSecretarias.filter(s => s.id !== id);
   },
@@ -363,8 +398,10 @@ export const dbService = {
   // CONSULTAS
   async getConsultas(): Promise<Consulta[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('consultas').select('*').order('data_consulta', { ascending: true });
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('consultas').select('*').order('data_consulta', { ascending: true });
+        if (!error && data) return data;
+      } catch (err) {}
     }
     return [...mockConsultas];
   },
@@ -378,30 +415,30 @@ export const dbService = {
     };
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('consultas').insert([newC]).select().single();
-      if (!error && data) {
-        // Criar transação financeira pendente automaticamente
-        await this.addTransacao({
-          consulta_id: data.id,
-          paciente_nome: data.paciente_nome,
-          medico_nome: data.medico_nome,
-          especialidade: data.especialidade,
-          valor: 300.00,
-          data_vencimento: data.data_consulta,
-          status: 'PENDENTE',
-          link_pagamento: `https://medsy.app/pay/${data.id}`,
-          pix_code: `00020126580014br.gov.bcb.pix0136medsy-pay-${data.id.substring(0,8)}`,
-          metodo_pagamento: 'PIX',
-          criado_em: new Date().toISOString()
-        });
-        return data;
-      }
+      try {
+        const { data, error } = await supabase.from('consultas').insert([newC]).select().single();
+        if (!error && data) {
+          await this.addTransacao({
+            consulta_id: data.id,
+            paciente_nome: data.paciente_nome,
+            medico_nome: data.medico_nome,
+            especialidade: data.especialidade,
+            valor: 300.00,
+            data_vencimento: data.data_consulta,
+            status: 'PENDENTE',
+            link_pagamento: `https://medsy.app/pay/${data.id}`,
+            pix_code: `00020126580014br.gov.bcb.pix0136medsy-pay-${data.id.substring(0,8)}`,
+            metodo_pagamento: 'PIX',
+            criado_em: new Date().toISOString()
+          });
+          mockConsultas.unshift(data);
+          return data;
+        }
+      } catch (err) {}
     }
 
-    mockConsultas.push(newC);
-    
-    // Criar transação financeira mock
-    mockTransacoes.push({
+    mockConsultas.unshift(newC);
+    mockTransacoes.unshift({
       id: crypto.randomUUID(),
       consulta_id: newC.id,
       paciente_nome: newC.paciente_nome,
@@ -421,7 +458,9 @@ export const dbService = {
 
   async updateConsultaStatus(id: string, status: Consulta['status']): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('consultas').update({ status }).eq('id', id);
+      try {
+        await supabase.from('consultas').update({ status }).eq('id', id);
+      } catch (err) {}
     }
     mockConsultas = mockConsultas.map(item => item.id === id ? { ...item, status } : item);
   },
@@ -429,8 +468,10 @@ export const dbService = {
   // HORÁRIOS DISPONÍVEIS
   async getHorarios(): Promise<HorarioDisponivel[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('horarios_disponiveis').select('*');
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('horarios_disponiveis').select('*');
+        if (!error && data) return data;
+      } catch (err) {}
     }
     return [...mockHorarios];
   },
@@ -439,8 +480,13 @@ export const dbService = {
     const newId = crypto.randomUUID();
     const newH = { ...h, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('horarios_disponiveis').insert([newH]).select().single();
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('horarios_disponiveis').insert([newH]).select().single();
+        if (!error && data) {
+          mockHorarios.push(data);
+          return data;
+        }
+      } catch (err) {}
     }
     mockHorarios.push(newH);
     return newH;
@@ -449,8 +495,10 @@ export const dbService = {
   // FINANÇAS & LINKS DE PAGAMENTO
   async getTransacoes(): Promise<TransacaoFinanceira[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('transacoes_financeiras').select('*').order('criado_em', { ascending: false });
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('transacoes_financeiras').select('*').order('criado_em', { ascending: false });
+        if (!error && data) return data;
+      } catch (err) {}
     }
     return [...mockTransacoes];
   },
@@ -459,8 +507,13 @@ export const dbService = {
     const newId = crypto.randomUUID();
     const newT = { ...t, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('transacoes_financeiras').insert([newT]).select().single();
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('transacoes_financeiras').insert([newT]).select().single();
+        if (!error && data) {
+          mockTransacoes.unshift(data);
+          return data;
+        }
+      } catch (err) {}
     }
     mockTransacoes.unshift(newT);
     return newT;
@@ -468,7 +521,9 @@ export const dbService = {
 
   async updateTransacaoStatus(id: string, status: TransacaoFinanceira['status']): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('transacoes_financeiras').update({ status }).eq('id', id);
+      try {
+        await supabase.from('transacoes_financeiras').update({ status }).eq('id', id);
+      } catch (err) {}
     }
     mockTransacoes = mockTransacoes.map(t => t.id === id ? { ...t, status } : t);
   },
@@ -476,8 +531,10 @@ export const dbService = {
   // FILA DE ATENDIMENTO & PAINEL DE SENHAS
   async getFila(): Promise<ItemFila[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('fila_atendimento').select('*').order('horario_chegada', { ascending: true });
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('fila_atendimento').select('*').order('horario_chegada', { ascending: true });
+        if (!error && data) return data;
+      } catch (err) {}
     }
     return [...mockFila];
   },
@@ -498,8 +555,13 @@ export const dbService = {
     };
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('fila_atendimento').insert([newItem]).select().single();
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('fila_atendimento').insert([newItem]).select().single();
+        if (!error && data) {
+          mockFila.push(data);
+          return data;
+        }
+      } catch (err) {}
     }
 
     mockFila.push(newItem);
@@ -507,7 +569,6 @@ export const dbService = {
   },
 
   async chamarProximoFila(medico_nome: string, consultorio: string): Promise<ItemFila | null> {
-    // Procura primeiro preferenciais, depois normais aguardando
     const aguardando = mockFila.filter(i => i.status === 'AGUARDANDO');
     if (aguardando.length === 0) return null;
 
@@ -522,7 +583,9 @@ export const dbService = {
     };
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('fila_atendimento').update(updated).eq('id', proximo.id);
+      try {
+        await supabase.from('fila_atendimento').update(updated).eq('id', proximo.id);
+      } catch (err) {}
     }
 
     mockFila = mockFila.map(i => i.id === proximo.id ? updated : i);
@@ -531,7 +594,9 @@ export const dbService = {
 
   async concluirAtendimentoFila(id: string): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('fila_atendimento').update({ status: 'CONCLUIDO' }).eq('id', id);
+      try {
+        await supabase.from('fila_atendimento').update({ status: 'CONCLUIDO' }).eq('id', id);
+      } catch (err) {}
     }
     mockFila = mockFila.map(i => i.id === id ? { ...i, status: 'CONCLUIDO' } : i);
   },
@@ -539,10 +604,12 @@ export const dbService = {
   // PRONTUÁRIOS MÉDICOS
   async getProntuarios(paciente_id?: string): Promise<Prontuario[]> {
     if (isSupabaseConfigured && supabase) {
-      let query = supabase.from('prontuarios').select('*').order('data', { ascending: false });
-      if (paciente_id) query = query.eq('paciente_id', paciente_id);
-      const { data, error } = await query;
-      if (!error && data) return data;
+      try {
+        let query = supabase.from('prontuarios').select('*').order('data', { ascending: false });
+        if (paciente_id) query = query.eq('paciente_id', paciente_id);
+        const { data, error } = await query;
+        if (!error && data) return data;
+      } catch (err) {}
     }
     if (paciente_id) {
       return mockProntuarios.filter(p => p.paciente_id === paciente_id);
@@ -554,8 +621,13 @@ export const dbService = {
     const newId = crypto.randomUUID();
     const newP = { ...p, id: newId };
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('prontuarios').insert([newP]).select().single();
-      if (!error && data) return data;
+      try {
+        const { data, error } = await supabase.from('prontuarios').insert([newP]).select().single();
+        if (!error && data) {
+          mockProntuarios.unshift(data);
+          return data;
+        }
+      } catch (err) {}
     }
     mockProntuarios.unshift(newP);
     return newP;
@@ -566,17 +638,19 @@ export const dbService = {
     const cleanedCpf = cpf.replace(/\D/g, '');
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .or(`cpf.eq.${cpf},cpf.eq.${cleanedCpf}`);
-      
-      if (!error && data && data.length > 0) {
-        const u = data[0];
-        if (u.senha === senhaLimpa || senhaLimpa === 'paodequeijo123') {
-          return u as Usuario;
+      try {
+        const { data, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .or(`cpf.eq.${cpf},cpf.eq.${cleanedCpf}`);
+        
+        if (!error && data && data.length > 0) {
+          const u = data[0];
+          if (u.senha === senhaLimpa || senhaLimpa === 'paodequeijo123') {
+            return u as Usuario;
+          }
         }
-      }
+      } catch (err) {}
     }
 
     const found = mockUsuarios.find(u => u.cpf === cpf || u.cpf === cleanedCpf);
@@ -589,8 +663,10 @@ export const dbService = {
 
   async toggleCalendarConnection(userId: string, provider: 'google' | 'outlook', status: boolean): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      const updateData = provider === 'google' ? { google_connected: status } : { outlook_connected: status };
-      await supabase.from('usuarios').update(updateData).eq('id', userId);
+      try {
+        const updateData = provider === 'google' ? { google_connected: status } : { outlook_connected: status };
+        await supabase.from('usuarios').update(updateData).eq('id', userId);
+      } catch (err) {}
     }
     mockUsuarios = mockUsuarios.map(u => {
       if (u.id === userId) {

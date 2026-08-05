@@ -11,7 +11,8 @@ import {
   Sparkles, 
   Activity,
   Ticket,
-  CheckCircle2
+  CheckCircle2,
+  BellRing
 } from 'lucide-react';
 import { ItemFila } from '@/lib/db';
 
@@ -32,21 +33,81 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
     .slice(-4)
     .reverse();
 
-  // Web Speech API: Falar o nome do paciente e senha quando a chamada muda
+  // Função para tocar um sinal sonoro agradável de hospital/aeroporto (Web Audio API)
+  const playHospitalChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+
+      const now = ctx.currentTime;
+      
+      // Nota 1 (C5 - 523.25Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(523.25, now);
+      gain1.gain.setValueAtTime(0.2, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.8);
+
+      // Nota 2 (E5 - 659.25Hz) - toca 0.25s depois
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(659.25, now + 0.25);
+      gain2.gain.setValueAtTime(0.25, now + 0.25);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.25);
+      osc2.stop(now + 1.2);
+    } catch (e) {
+      console.log('Web Audio Chime Error:', e);
+    }
+  };
+
+  // Web Speech API com Voz Humanizada e Pausas Naturais
   useEffect(() => {
     if (senhaEmAtendimento && senhaEmAtendimento.id !== lastCalledIdRef.current) {
       lastCalledIdRef.current = senhaEmAtendimento.id;
 
       if (voiceEnabled && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Parar fala anterior
+        window.speechSynthesis.cancel(); // Parar falas anteriores
 
-        const textoFala = `Senha ${senhaEmAtendimento.senha}, ${senhaEmAtendimento.paciente_nome}, dirija-se ao ${senhaEmAtendimento.consultorio || 'Consultório 1'}.`;
-        const utterance = new SpeechSynthesisUtterance(textoFala);
-        utterance.lang = 'pt-BR';
-        utterance.rate = 0.95; // Velocidade agradável
-        utterance.pitch = 1.0;
+        // Toca o Chime Sonoro Hospitalar 0.5s antes da fala
+        playHospitalChime();
 
-        window.speechSynthesis.speak(utterance);
+        setTimeout(() => {
+          // Formatação com pausas naturais para cadência humana
+          const partesSenha = senhaEmAtendimento.senha.split('-');
+          const senhaFalada = partesSenha.length > 1 
+            ? `${partesSenha[0]}, ${parseInt(partesSenha[1], 10)}` 
+            : senhaEmAtendimento.senha;
+
+          const textoFala = `Atenção. Senha... ${senhaFalada}. Paciente... ${senhaEmAtendimento.paciente_nome}. Por favor, dirija-se ao... ${senhaEmAtendimento.consultorio || 'Consultório 1'}.`;
+
+          const utterance = new SpeechSynthesisUtterance(textoFala);
+          utterance.lang = 'pt-BR';
+          utterance.rate = 0.88; // Ritmo mais calmo e humanizado
+          utterance.pitch = 1.05; // Tom de voz mais acolhedor
+
+          // Busca vozes em português natural disponíveis no navegador
+          const voices = window.speechSynthesis.getVoices();
+          const ptVoice = voices.find(v => 
+            (v.lang.includes('pt') || v.lang.includes('BR')) && 
+            (v.name.includes('Google') || v.name.includes('Luciana') || v.name.includes('Francisca') || v.name.includes('Helena') || v.name.includes('Natural'))
+          ) || voices.find(v => v.lang.includes('pt'));
+
+          if (ptVoice) {
+            utterance.voice = ptVoice;
+          }
+
+          window.speechSynthesis.speak(utterance);
+        }, 600);
       }
     }
   }, [senhaEmAtendimento, voiceEnabled]);
@@ -101,6 +162,16 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
         {/* CONTROLES DE VOZ E TELA CHEIA */}
         <div className="flex items-center space-x-3">
           
+          {/* TESTAR SINAL SONORO */}
+          <button
+            onClick={playHospitalChime}
+            className="flex items-center space-x-1.5 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold"
+            title="Testar Sinal Sonoro Chime"
+          >
+            <BellRing className="h-3.5 w-3.5 text-sky-400" />
+            <span>Testar Chime</span>
+          </button>
+
           {/* TOGGLE VOZ SINTETIZADA */}
           <button
             onClick={() => setVoiceEnabled(!voiceEnabled)}
@@ -112,7 +183,7 @@ export const PainelTvRecepcao: React.FC<PainelTvRecepcaoProps> = ({ fila }) => {
             title="Ativar/Desativar Anúncio de Voz"
           >
             {voiceEnabled ? <Volume2 className="h-4 w-4 text-emerald-400 animate-bounce" /> : <VolumeX className="h-4 w-4" />}
-            <span>{voiceEnabled ? 'Voz Sonora Ativa 🔊' : 'Voz Muta 🔇'}</span>
+            <span>{voiceEnabled ? 'Voz Humanizada Ativa 🔊' : 'Voz Muta 🔇'}</span>
           </button>
 
           {/* TOGGLE TELA CHEIA (FULLSCREEN) */}
