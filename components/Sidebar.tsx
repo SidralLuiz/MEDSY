@@ -8,12 +8,15 @@ import {
   Calendar, 
   Clock, 
   ShieldCheck,
+  Stethoscope,
+  Ticket,
+  DollarSign,
   Lock,
   ChevronRight
 } from 'lucide-react';
 import { Usuario } from '@/lib/db';
 
-export type ActiveTab = 'dashboard' | 'pacientes' | 'equipe' | 'agendamentos' | 'horarios' | 'database';
+export type ActiveTab = 'dashboard' | 'atendimento' | 'fila' | 'agendamentos' | 'financeiro' | 'pacientes' | 'equipe' | 'horarios' | 'database';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -40,6 +43,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
       desc: 'Visão Geral e Métricas'
     },
     {
+      id: 'atendimento' as ActiveTab,
+      label: 'Atendimento Clínico',
+      icon: Stethoscope,
+      minLevel: 1,
+      desc: 'Prontuário & Chamada'
+    },
+    {
+      id: 'fila' as ActiveTab,
+      label: 'Fila de Atendimento',
+      icon: Ticket,
+      minLevel: 1,
+      desc: 'Totem & Painel de Senhas'
+    },
+    {
+      id: 'agendamentos' as ActiveTab,
+      label: 'Agendamentos',
+      icon: Calendar,
+      minLevel: 1,
+      desc: 'Consultas e Calendário'
+    },
+    {
+      id: 'financeiro' as ActiveTab,
+      label: 'Financeiro & Pagamentos',
+      icon: DollarSign,
+      minLevel: 3,
+      desc: 'Consolidação e Links PIX'
+    },
+    {
       id: 'pacientes' as ActiveTab,
       label: 'Pacientes',
       icon: Users,
@@ -52,13 +83,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: UserCheck,
       minLevel: 4,
       desc: 'Médicos e Secretárias'
-    },
-    {
-      id: 'agendamentos' as ActiveTab,
-      label: 'Agendamentos',
-      icon: Calendar,
-      minLevel: 1,
-      desc: 'Consultas e Calendário'
     },
     {
       id: 'horarios' as ActiveTab,

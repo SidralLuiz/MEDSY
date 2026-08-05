@@ -8,6 +8,9 @@ import { PacientesModule } from '@/components/PacientesModule';
 import { EquipeModule } from '@/components/EquipeModule';
 import { AgendamentoModule } from '@/components/AgendamentoModule';
 import { HorariosModule } from '@/components/HorariosModule';
+import { FinanceiroModule } from '@/components/FinanceiroModule';
+import { AtendimentoModule } from '@/components/AtendimentoModule';
+import { FilaAtendimentoModule } from '@/components/FilaAtendimentoModule';
 import { LoginModal } from '@/components/LoginModal';
 import { LoginPage } from '@/components/LoginPage';
 import { DatabaseStatusModal } from '@/components/DatabaseStatusModal';
@@ -19,6 +22,9 @@ import {
   Secretaria, 
   Consulta, 
   HorarioDisponivel, 
+  TransacaoFinanceira,
+  ItemFila,
+  Prontuario,
   Usuario 
 } from '@/lib/db';
 import { CheckCircle2, ShieldCheck } from 'lucide-react';
@@ -50,6 +56,9 @@ export default function Home() {
   const [secretarias, setSecretarias] = useState<Secretaria[]>([]);
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [horarios, setHorarios] = useState<HorarioDisponivel[]>([]);
+  const [transacoes, setTransacoes] = useState<TransacaoFinanceira[]>([]);
+  const [fila, setFila] = useState<ItemFila[]>([]);
+  const [prontuarios, setProntuarios] = useState<Prontuario[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Modals
@@ -80,12 +89,15 @@ export default function Home() {
   const refreshData = async () => {
     try {
       setLoading(true);
-      const [pData, mData, sData, cData, hData] = await Promise.all([
+      const [pData, mData, sData, cData, hData, tData, fData, prData] = await Promise.all([
         dbService.getPacientes(),
         dbService.getMedicos(),
         dbService.getSecretarias(),
         dbService.getConsultas(),
-        dbService.getHorarios()
+        dbService.getHorarios(),
+        dbService.getTransacoes(),
+        dbService.getFila(),
+        dbService.getProntuarios()
       ]);
 
       setPacientes(pData);
@@ -93,6 +105,9 @@ export default function Home() {
       setSecretarias(sData);
       setConsultas(cData);
       setHorarios(hData);
+      setTransacoes(tData);
+      setFila(fData);
+      setProntuarios(prData);
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
     } finally {
@@ -179,6 +194,49 @@ export default function Home() {
     await refreshData();
   };
 
+  // Handlers para Finanças & Cobranças
+  const handleUpdateTransacaoStatus = async (id: string, status: TransacaoFinanceira['status']) => {
+    await dbService.updateTransacaoStatus(id, status);
+    showToast(`Status do pagamento atualizado para: ${status}`);
+    await refreshData();
+  };
+
+  const handleAddTransacao = async (t: Omit<TransacaoFinanceira, 'id'>) => {
+    await dbService.addTransacao(t);
+    showToast(`Cobrança gerada com sucesso!`);
+    await refreshData();
+  };
+
+  // Handlers para Fila de Senhas & Atendimento Médico
+  const handleGerarSenha = async (nome: string, tipo: 'NORMAL' | 'PREFERENCIAL', pacienteId?: string) => {
+    const item = await dbService.gerarSenha(nome, tipo, pacienteId);
+    showToast(`Senha ${item.senha} gerada para ${nome}!`);
+    await refreshData();
+    return item;
+  };
+
+  const handleChamarProximo = async (medicoNome: string, consultorio: string) => {
+    const chamado = await dbService.chamarProximoFila(medicoNome, consultorio);
+    if (chamado) {
+      showToast(`🔔 Chamando a senha ${chamado.senha}: ${chamado.paciente_nome}!`);
+    } else {
+      showToast(`Nenhum paciente aguardando na fila.`);
+    }
+    await refreshData();
+    return chamado;
+  };
+
+  const handleConcluirFila = async (id: string) => {
+    await dbService.concluirAtendimentoFila(id);
+    await refreshData();
+  };
+
+  const handleSaveProntuario = async (p: Omit<Prontuario, 'id'>) => {
+    await dbService.addProntuario(p);
+    showToast(`Prontuário salvo no histórico do paciente!`);
+    await refreshData();
+  };
+
   const handleUserCalendarUpdate = () => {
     if (currentUser) {
       const newGoogle = !currentUser.google_connected;
@@ -262,6 +320,50 @@ export default function Home() {
                 />
               )}
 
+              {activeTab === 'atendimento' && (
+                <AtendimentoModule
+                  pacientes={pacientes}
+                  medicos={medicos}
+                  consultas={consultas}
+                  fila={fila}
+                  prontuarios={prontuarios}
+                  onChamarProximo={handleChamarProximo}
+                  onSaveProntuario={handleSaveProntuario}
+                  onConcluirFila={handleConcluirFila}
+                />
+              )}
+
+              {activeTab === 'fila' && (
+                <FilaAtendimentoModule
+                  fila={fila}
+                  pacientes={pacientes}
+                  onGerarSenha={handleGerarSenha}
+                  onConcluirFila={handleConcluirFila}
+                />
+              )}
+
+              {activeTab === 'agendamentos' && (
+                <AgendamentoModule
+                  consultas={consultas}
+                  pacientes={pacientes}
+                  medicos={medicos}
+                  horarios={horarios}
+                  onAddConsulta={handleAddConsulta}
+                  onUpdateStatus={handleUpdateConsultaStatus}
+                  isModalOpen={isAgendamentoModalOpen}
+                  setIsModalOpen={setIsAgendamentoModalOpen}
+                />
+              )}
+
+              {activeTab === 'financeiro' && (
+                <FinanceiroModule
+                  transacoes={transacoes}
+                  consultas={consultas}
+                  onUpdateStatus={handleUpdateTransacaoStatus}
+                  onAddTransacao={handleAddTransacao}
+                />
+              )}
+
               {activeTab === 'pacientes' && (
                 <PacientesModule
                   pacientes={pacientes}
@@ -282,19 +384,6 @@ export default function Home() {
                   onDeleteMedico={handleDeleteMedico}
                   onAddSecretaria={handleAddSecretaria}
                   onDeleteSecretaria={handleDeleteSecretaria}
-                />
-              )}
-
-              {activeTab === 'agendamentos' && (
-                <AgendamentoModule
-                  consultas={consultas}
-                  pacientes={pacientes}
-                  medicos={medicos}
-                  horarios={horarios}
-                  onAddConsulta={handleAddConsulta}
-                  onUpdateStatus={handleUpdateConsultaStatus}
-                  isModalOpen={isAgendamentoModalOpen}
-                  setIsModalOpen={setIsAgendamentoModalOpen}
                 />
               )}
 
