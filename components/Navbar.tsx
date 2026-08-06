@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Activity, User, LogOut, ShieldCheck, Calendar } from 'lucide-react';
+import { Activity, User, LogOut, ShieldCheck, Calendar, FileText } from 'lucide-react';
 import { Usuario } from '@/lib/db';
 
 interface NavbarProps {
@@ -10,6 +10,7 @@ interface NavbarProps {
   onLogout: () => void;
   onOpenCalendarModal: () => void;
   onOpenDbModal?: () => void;
+  onOpenDsr?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,7 +18,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenLogin,
   onLogout,
   onOpenCalendarModal,
-  onOpenDbModal
+  onOpenDbModal,
+  onOpenDsr
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full glass-card border-b border-slate-800/80 px-6 lg:px-12 py-3.5">
@@ -61,6 +63,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="hidden sm:inline">Configurações do Sistema</span>
           </button>
+
+          {/* BOTÃO DIREITOS DO TITULAR (LGPD) */}
+          {onOpenDsr && (
+            <button
+              onClick={onOpenDsr}
+              className="flex items-center space-x-2 text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-200 hover:bg-slate-700 transition-all shadow-sm"
+              title="Meus Dados — Direitos do Titular (LGPD)"
+            >
+              <FileText className="h-4 w-4 text-sky-400" />
+              <span className="hidden sm:inline">Meus Dados</span>
+            </button>
+          )}
 
           {/* PERFIL / LOGIN */}
           {currentUser ? (

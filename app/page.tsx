@@ -16,6 +16,8 @@ import { LoginModal } from '@/components/LoginModal';
 import { LoginPage } from '@/components/LoginPage';
 import { DatabaseStatusModal } from '@/components/DatabaseStatusModal';
 import { CalendarIntegrationsModal } from '@/components/CalendarIntegrationsModal';
+import { ConsentModal } from '@/components/ConsentModal';
+import { DsrModal } from '@/components/DsrModal';
 import { 
   dbService, 
   Paciente, 
@@ -32,16 +34,8 @@ import { CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
-  const [currentUser, setCurrentUser] = useState<Usuario | null>({
-    id: 'f1000000-0000-0000-0000-000000000001',
-    cpf: '131',
-    senha: 'paodequeijo123',
-    nome: 'Luiz (Admin)',
-    nivel_acesso: 4,
-    cargo: 'ADMIN',
-    google_connected: true,
-    outlook_connected: true
-  });
+  // Sessão NUNCA é hardcoded: exige login real via Supabase Auth
+  const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
 
   // Toast Notification state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -68,6 +62,14 @@ export default function Home() {
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isPacienteModalOpen, setIsPacienteModalOpen] = useState(false);
   const [isAgendamentoModalOpen, setIsAgendamentoModalOpen] = useState(false);
+  const [isConsentOpen, setIsConsentOpen] = useState(false);
+  const [isDsrOpen, setIsDsrOpen] = useState(false);
+
+  // LGPD: verifica se o usuário já consentiu com o tratamento de dados de saúde
+  const verificarConsentimento = async (userId: string) => {
+    const consentiu = await dbService.jaConsentiu(userId);
+    if (!consentiu) setIsConsentOpen(true);
+  };
 
   // Verificação de retorno OAuth na URL
   useEffect(() => {
@@ -255,6 +257,7 @@ export default function Home() {
       <LoginPage
         onLoginSuccess={(user) => {
           setCurrentUser(user);
+          verificarConsentimento(user.id);
           showToast(`Bem-vindo, ${user.nome}! Login efetuado com sucesso.`);
         }}
       />
@@ -277,11 +280,13 @@ export default function Home() {
         currentUser={currentUser}
         onOpenLogin={() => setIsLoginModalOpen(true)}
         onLogout={() => {
+          dbService.logout();
           setCurrentUser(null);
           showToast('Você saiu da sua conta.');
         }}
         onOpenDbModal={() => setIsDbModalOpen(true)}
         onOpenCalendarModal={() => setIsCalendarModalOpen(true)}
+        onOpenDsr={() => setIsDsrOpen(true)}
       />
 
       {/* CONTAINER PRINCIPAL DAS PÁGINAS WIDESCREEN */}
@@ -429,8 +434,25 @@ export default function Home() {
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={(user) => {
           setCurrentUser(user);
+          verificarConsentimento(user.id);
           showToast(`Bem-vindo, ${user.nome}! Login efetuado com sucesso.`);
         }}
+      />
+
+      {/* MODAL CONSENTIMENTO LGPD (primeiro acesso) */}
+      {isConsentOpen && (
+        <ConsentModal
+          onDone={() => {
+            setIsConsentOpen(false);
+            showToast('Consentimento registrado. Obrigado!');
+          }}
+        />
+      )}
+
+      {/* MODAL DIREITOS DO TITULAR (LGPD) */}
+      <DsrModal
+        isOpen={isDsrOpen}
+        onClose={() => setIsDsrOpen(false)}
       />
 
       {/* MODAL BANCO DE DADOS STATUS */}

@@ -223,7 +223,7 @@ export const AgendamentoModule: React.FC<AgendamentoModuleProps> = ({
 
                   {c.observacoes && (
                     <p className="text-[11px] text-slate-400 mt-1 italic">
-                      Obs: "{c.observacoes}"
+                      Obs: &quot;{c.observacoes}&quot;
                     </p>
                   )}
                 </div>

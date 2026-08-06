@@ -226,7 +226,7 @@ export const AtendimentoModule: React.FC<AtendimentoModuleProps> = ({
                 <AlertCircle className="h-10 w-10 text-slate-500 mx-auto" />
                 <h3 className="text-sm font-bold text-slate-300">Nenhum paciente em atendimento nesta sala</h3>
                 <p className="text-xs text-slate-400">
-                  Clique no botão <strong>"Chamar Próximo Paciente"</strong> acima para chamar a próxima senha da fila da recepção.
+                  Clique no botão <strong>&quot;Chamar Próximo Paciente&quot;</strong> acima para chamar a próxima senha da fila da recepção.
                 </p>
               </div>
             )}

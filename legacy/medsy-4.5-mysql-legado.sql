@@ -12,10 +12,10 @@ NASCP VARCHAR(35),
 TELEFONEP VARCHAR(70),
 ENDERECOP VARCHAR(35)
 );
-INSERT INTO PACIENTE VALUES(1,"LUIZ",82815453991,"LFSIDRAL",17,"47991415518","RUA 15 DE AGOSTO","2103");
-INSERT INTO PACIENTE VALUES(NULL,"LUIZ",294061357,"maria.silva@email.com",17,"(11) 91234-5678","RUA 15 DE AGOSTO","2103");
-INSERT INTO PACIENTE VALUES(NULL,"LUIZA",725380419,"joao123@gmail.com",17,"(21) 99876-5432","RUA 15 DE AGOSTO","2103");
-INSERT INTO PACIENTE VALUES(NULL,"LUIZA",725380419,"joao123@gmail.com",17,"(31) 98765-4321","RUA 15 DE AGOSTO","2103");
+INSERT INTO PACIENTE VALUES(1,"PACIENTE TESTE UM",11111111111,"paciente1@teste.local",1,"(00) 00000-0001","RUA FICTICIA 100","2103");
+INSERT INTO PACIENTE VALUES(NULL,"PACIENTE TESTE DOIS",222222222,"paciente2@teste.local",1,"(00) 00000-0002","RUA FICTICIA 200","2103");
+INSERT INTO PACIENTE VALUES(NULL,"PACIENTE TESTE TRES",333333333,"paciente3@teste.local",1,"(00) 00000-0003","RUA FICTICIA 300","2103");
+INSERT INTO PACIENTE VALUES(NULL,"PACIENTE TESTE QUATRO",333333333,"paciente4@teste.local",1,"(00) 00000-0004","RUA FICTICIA 400","2103");
 
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 DROP TABLE MEDICO;
@@ -30,8 +30,8 @@ CRM VARCHAR(35),
 ESPECIALIDADE VARCHAR(35),
 SENHAM VARCHAR(20)
 );
-INSERT INTO MEDICO VALUES(1,"LUIZ",518926370,"carlos.oliveira@yahoo.com",17,"47991413413123","RUA 16 DE AGOSTO","000000/SP","CARDIOLOGIA","2103");
-INSERT INTO MEDICO VALUES(NULL,"LUIZ",518926370,"carlos.oliveira@yahoo.com",17,"47991413413123","RUA 16 DE AGOSTO","000000/SP","CARDIOLOGIA","2103");
+INSERT INTO MEDICO VALUES(1,"MEDICO TESTE UM",444444444,"medico1@teste.local",1,"(00) 00000-0004","RUA FICTICIA 400","000000/UF","CARDIOLOGIA","2103");
+INSERT INTO MEDICO VALUES(NULL,"MEDICO TESTE UM",444444444,"medico1@teste.local",1,"(00) 00000-0004","RUA FICTICIA 400","000000/UF","CARDIOLOGIA","2103");
 SELECT * FROM MEDICO;
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 DESCRIBE SECRETARIA;
@@ -46,7 +46,7 @@ TELEFONEs VARCHAR(70),
 ENDERECOs VARCHAR(35),
 SENHAS VARCHAR(15)
 );
-INSERT INTO SECRETARIA VALUES(null,"LUIZA",058241963,"ana.martins@hotmail.com",87,"47991413413123","RUA 15 DE AGOSTO","2103","Secretaria");
+INSERT INTO SECRETARIA VALUES(null,"SECRETARIA TESTE",666666666,"secretaria@teste.local",1,"(00) 00000-0006","RUA FICTICIA 600","2103","Secretaria");
 SELECT * FROM SECRETARIA;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ nomeA varchar(35),
 nivelAA int(15)
 );
 SELECT * FROM ADM;
-INSERT INTO ADM VALUES("131","paodequeijo123","luizinhosidral",4);
+INSERT INTO ADM VALUES("131","senhaadmin","adminteste",4);
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 
 

@@ -123,7 +123,7 @@ export const FilaAtendimentoModule: React.FC<FilaAtendimentoModuleProps> = ({
             ) : (
               <div className="py-6 space-y-2">
                 <p className="text-3xl font-extrabold text-slate-400">NENHUMA SENHA EM CHAMADA</p>
-                <p className="text-xs text-slate-500">Aguardando o médico clicar em "Chamar Próximo Paciente"...</p>
+                <p className="text-xs text-slate-500">Aguardando o médico clicar em &quot;Chamar Próximo Paciente&quot;...</p>
               </div>
             )}
           </div>

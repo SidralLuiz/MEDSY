@@ -121,24 +121,18 @@ export interface Prontuario {
 
 // MEMORY MOCK STORAGE (Fallback)
 let mockPacientes: Paciente[] = [
-  { id: 'a1000000-0000-0000-0000-000000000001', nome: 'Luiz Fernando Sidral', cpf: '82815453991', email: 'luiz.sidral@email.com', data_nascimento: '17/05/1998', telefone: '(47) 99141-5518', endereco: 'Rua 15 de Agosto, 2103', google_connected: true },
-  { id: 'a1000000-0000-0000-0000-000000000002', nome: 'Maria Silva', cpf: '29406135700', email: 'maria.silva@email.com', data_nascimento: '12/03/1990', telefone: '(11) 91234-5678', endereco: 'Rua das Flores, 102', google_connected: false },
-  { id: 'a1000000-0000-0000-0000-000000000003', nome: 'João Santos', cpf: '72538041900', email: 'joao123@gmail.com', data_nascimento: '04/11/1985', telefone: '(21) 99876-5432', endereco: 'Av. Atlântica, 500', google_connected: false }
+  { id: 'a1000000-0000-0000-0000-000000000001', nome: 'Paciente Teste Um', cpf: '11111111111', email: 'paciente1@teste.local', data_nascimento: '01/01/1980', telefone: '(00) 00000-0001', endereco: 'Rua Fictícia, 100', google_connected: false },
+  { id: 'a1000000-0000-0000-0000-000000000002', nome: 'Paciente Teste Dois', cpf: '22222222222', email: 'paciente2@teste.local', data_nascimento: '02/02/1990', telefone: '(00) 00000-0002', endereco: 'Rua Fictícia, 200', google_connected: false },
+  { id: 'a1000000-0000-0000-0000-000000000003', nome: 'Paciente Teste Tres', cpf: '33333333333', email: 'paciente3@teste.local', data_nascimento: '03/03/1985', telefone: '(00) 00000-0003', endereco: 'Av. Fictícia, 300', google_connected: false }
 ];
 
 let mockMedicos: Medico[] = [
-  { id: 'b1000000-0000-0000-0000-000000000001', nome: 'Dr. Carlos Oliveira', cpf: '51892637000', email: 'carlos.oliveira@yahoo.com', data_nascimento: '22/08/1980', telefone: '(47) 99141-3413', endereco: 'Rua 16 de Agosto, 45', crm: '123456/SP', especialidade: 'Cardiologia', senha: '2103', google_connected: true },
-  { id: 'b1000000-0000-0000-0000-000000000002', nome: 'Dra. Ana Beatriz', cpf: '61928374511', email: 'ana.beatriz@medsy.com', data_nascimento: '10/01/1988', telefone: '(47) 98877-6655', endereco: 'Av. Brasil, 890', crm: '654321/SC', especialidade: 'Pediatria', senha: '123456', google_connected: false }
+  { id: 'b1000000-0000-0000-0000-000000000001', nome: 'Dr. Medico Teste Um', cpf: '44444444444', email: 'medico1@teste.local', data_nascimento: '04/04/1980', telefone: '(00) 00000-0004', endereco: 'Rua Fictícia, 400', crm: '000001/UF', especialidade: 'Cardiologia', google_connected: false },
+  { id: 'b1000000-0000-0000-0000-000000000002', nome: 'Dra. Medica Teste Dois', cpf: '55555555555', email: 'medico2@teste.local', data_nascimento: '05/05/1988', telefone: '(00) 00000-0005', endereco: 'Av. Fictícia, 500', crm: '000002/UF', especialidade: 'Pediatria', google_connected: false }
 ];
 
 let mockSecretarias: Secretaria[] = [
-  { id: 'c1000000-0000-0000-0000-000000000001', nome: 'Luiza Martins', cpf: '05824196300', email: 'ana.martins@hotmail.com', data_nascimento: '15/09/1995', telefone: '(47) 99141-9988', endereco: 'Rua 15 de Agosto, 100', senha: '2103', google_connected: true }
-];
-
-let mockUsuarios: Usuario[] = [
-  { id: 'f1000000-0000-0000-0000-000000000001', cpf: '131', senha: 'paodequeijo123', nome: 'Luiz (Admin)', nivel_acesso: 4, cargo: 'ADMIN', google_connected: true },
-  { id: 'f1000000-0000-0000-0000-000000000002', cpf: '51892637000', senha: '2103', nome: 'Dr. Carlos Oliveira', nivel_acesso: 1, cargo: 'MEDICO', ref_id: 'b1000000-0000-0000-0000-000000000001', google_connected: true },
-  { id: 'f1000000-0000-0000-0000-000000000003', cpf: '05824196300', senha: '2103', nome: 'Luiza Martins', nivel_acesso: 3, cargo: 'SECRETARIA', ref_id: 'c1000000-0000-0000-0000-000000000001', google_connected: true }
+  { id: 'c1000000-0000-0000-0000-000000000001', nome: 'Secretaria Teste', cpf: '66666666666', email: 'secretaria@teste.local', data_nascimento: '06/06/1995', telefone: '(00) 00000-0006', endereco: 'Rua Fictícia, 600', google_connected: false }
 ];
 
 let mockConsultas: Consulta[] = [
@@ -282,7 +276,10 @@ export const dbService = {
   async getMedicos(): Promise<Medico[]> {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase.from('medicos').select('*').order('nome');
+        const { data, error } = await supabase
+          .from('medicos')
+          .select('id, nome, cpf, email, data_nascimento, telefone, endereco, crm, especialidade, google_connected, outlook_connected, criado_em')
+          .order('nome');
         if (!error && data) return data;
       } catch (err) {}
     }
@@ -291,35 +288,18 @@ export const dbService = {
 
   async addMedico(m: Omit<Medico, 'id'>): Promise<Medico> {
     const newId = crypto.randomUUID();
-    const newM = { ...m, id: newId, google_connected: false, outlook_connected: false };
+    const { senha: _senha, ...dadosPublicos } = m;
+    const newM = { ...dadosPublicos, id: newId, google_connected: false, outlook_connected: false };
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('medicos').insert([newM]).select().single();
         if (!error && data) {
-          await supabase.from('usuarios').insert([{
-            id: crypto.randomUUID(),
-            cpf: newM.cpf,
-            senha: newM.senha || '123456',
-            nome: newM.nome,
-            nivel_acesso: 1,
-            cargo: 'MEDICO',
-            ref_id: newM.id
-          }]);
           mockMedicos.unshift(data);
           return data;
         }
       } catch (err) {}
     }
     mockMedicos.unshift(newM);
-    mockUsuarios.push({
-      id: crypto.randomUUID(),
-      cpf: newM.cpf,
-      senha: newM.senha || '123456',
-      nome: newM.nome,
-      nivel_acesso: 1,
-      cargo: 'MEDICO',
-      ref_id: newM.id
-    });
     return newM;
   },
 
@@ -345,7 +325,10 @@ export const dbService = {
   async getSecretarias(): Promise<Secretaria[]> {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase.from('secretarias').select('*').order('nome');
+        const { data, error } = await supabase
+          .from('secretarias')
+          .select('id, nome, cpf, email, data_nascimento, telefone, endereco, google_connected, outlook_connected, criado_em')
+          .order('nome');
         if (!error && data) return data;
       } catch (err) {}
     }
@@ -354,35 +337,18 @@ export const dbService = {
 
   async addSecretaria(s: Omit<Secretaria, 'id'>): Promise<Secretaria> {
     const newId = crypto.randomUUID();
-    const newS = { ...s, id: newId, google_connected: false, outlook_connected: false };
+    const { senha: _senha, ...dadosPublicos } = s;
+    const newS = { ...dadosPublicos, id: newId, google_connected: false, outlook_connected: false };
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('secretarias').insert([newS]).select().single();
         if (!error && data) {
-          await supabase.from('usuarios').insert([{
-            id: crypto.randomUUID(),
-            cpf: newS.cpf,
-            senha: newS.senha || '123456',
-            nome: newS.nome,
-            nivel_acesso: 3,
-            cargo: 'SECRETARIA',
-            ref_id: newS.id
-          }]);
           mockSecretarias.unshift(data);
           return data;
         }
       } catch (err) {}
     }
     mockSecretarias.unshift(newS);
-    mockUsuarios.push({
-      id: crypto.randomUUID(),
-      cpf: newS.cpf,
-      senha: newS.senha || '123456',
-      nome: newS.nome,
-      nivel_acesso: 3,
-      cargo: 'SECRETARIA',
-      ref_id: newS.id
-    });
     return newS;
   },
 
@@ -608,7 +574,11 @@ export const dbService = {
         let query = supabase.from('prontuarios').select('*').order('data', { ascending: false });
         if (paciente_id) query = query.eq('paciente_id', paciente_id);
         const { data, error } = await query;
-        if (!error && data) return data;
+        if (!error && data) {
+          const s = supabase;
+          data.forEach((p) => s.rpc('registrar_acesso_prontuario', { p_prontuario_id: p.id }).then(() => {}, () => {}));
+          return data;
+        }
       } catch (err) {}
     }
     if (paciente_id) {
@@ -633,32 +603,80 @@ export const dbService = {
     return newP;
   },
 
-  // AUTENTICAÇÃO
-  async autencicarUsuario(cpf: string, senhaLimpa: string): Promise<Usuario | null> {
-    const cleanedCpf = cpf.replace(/\D/g, '');
+  // AUTENTICAÇÃO — via Supabase Auth (nunca comparar senha manualmente)
+  async autencicarUsuario(cpf: string, senhaLimpa: string): Promise<Usuario | null> {    const login = cpf.replace(/\D/g, '');
 
     if (isSupabaseConfigured && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('usuarios')
-          .select('*')
-          .or(`cpf.eq.${cpf},cpf.eq.${cleanedCpf}`);
-        
-        if (!error && data && data.length > 0) {
-          const u = data[0];
-          if (u.senha === senhaLimpa || senhaLimpa === 'paodequeijo123') {
-            return u as Usuario;
-          }
-        }
-      } catch (err) {}
-    }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: `${login}@medsy.local`,
+        password: senhaLimpa,
+      });
+      if (error || !data.user) return null;
 
-    const found = mockUsuarios.find(u => u.cpf === cpf || u.cpf === cleanedCpf);
-    if (found && (found.senha === senhaLimpa || senhaLimpa === 'paodequeijo123')) {
-      return found;
+      const { data: perfil, error: perfilError } = await supabase
+        .from('usuarios')
+        .select('id, cpf, nome, nivel_acesso, cargo, ref_id, google_connected, outlook_connected')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (perfilError || !perfil) return null;
+      return perfil as Usuario;
     }
 
     return null;
+  },
+
+  async logout(): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut();
+    }
+  },
+
+  // ===== LGPD: CONSENTIMENTO E DIREITOS DO TITULAR (DSR) =====
+
+  // Termo de consentimento de saúde vigente
+  async getTermoConsentimento(): Promise<{ versao: string; texto_html: string } | null> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    const { data, error } = await supabase
+      .from('termos_aceite')
+      .select('versao, texto_html')
+      .eq('tipo', 'CONSENTIMENTO_DADOS_SAUDE')
+      .eq('vigente', true)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data;
+  },
+
+  // O titular já consentiu com a versão vigente?
+  async jaConsentiu(userId: string): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase) return true;
+    const { data } = await supabase
+      .from('consent_logs')
+      .select('id')
+      .eq('id_usuario', userId)
+      .eq('consentiu', true)
+      .maybeSingle();
+    return Boolean(data);
+  },
+
+  // Registra o consentimento (inviolável — via RPC SECURITY DEFINER)
+  async registrarConsentimento(versaoTermos: string, consentiu: boolean): Promise<void> {
+    if (!isSupabaseConfigured || !supabase) return;
+    await supabase.rpc('registrar_consentimento', {
+      p_versao_termos: versaoTermos,
+      p_finalidade: 'TATAMENTO_SAUDE',
+      p_consentiu: consentiu,
+      p_ip_origem: null,
+      p_user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+    });
+  },
+
+  // Portabilidade (Art. 18, V) — exporta os dados do titular logado
+  async exportarDadosTitular(): Promise<unknown> {
+    if (!isSupabaseConfigured || !supabase) return null;
+    const { data, error } = await supabase.rpc('exportar_dados_titular');
+    if (error) throw error;
+    return data;
   },
 
   async toggleCalendarConnection(userId: string, provider: 'google' | 'outlook', status: boolean): Promise<void> {
@@ -668,11 +686,5 @@ export const dbService = {
         await supabase.from('usuarios').update(updateData).eq('id', userId);
       } catch (err) {}
     }
-    mockUsuarios = mockUsuarios.map(u => {
-      if (u.id === userId) {
-        return provider === 'google' ? { ...u, google_connected: status } : { ...u, outlook_connected: status };
-      }
-      return u;
-    });
   }
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, Lock, Activity, ShieldCheck, X, KeyRound, Sparkles } from 'lucide-react';
+import { User, Lock, Activity, ShieldCheck, X, KeyRound } from 'lucide-react';
 import { dbService, Usuario } from '@/lib/db';
 
 interface LoginModalProps {
@@ -42,12 +42,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
-  const setDemoUser = (demoCpf: string, demoSenha: string) => {
-    setCpf(demoCpf);
-    setSenha(demoSenha);
-    setErrorMsg('');
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="glass-card rounded-3xl w-full max-w-md p-6 sm:p-8 border border-sky-500/30 shadow-2xl relative overflow-hidden">
@@ -73,37 +67,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </button>
         </div>
 
-        {/* DEMO ACCESSIBILITY HELPER */}
-        <div className="mb-5 bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
-          <div className="text-[11px] font-bold text-sky-400 flex items-center space-x-1 mb-2">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Acesso Rápido para Testes:</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-[10px]">
-            <button
-              type="button"
-              onClick={() => setDemoUser('131', 'paodequeijo123')}
-              className="px-2 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold text-center"
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => setDemoUser('51892637000', '2103')}
-              className="px-2 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold text-center"
-            >
-              Médico
-            </button>
-            <button
-              type="button"
-              onClick={() => setDemoUser('05824196300', '2103')}
-              className="px-2 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold text-center"
-            >
-              Secretária
-            </button>
-          </div>
-        </div>
+        {/* SEM Acesso Rápido em produção: credenciais de demo removidas por segurança */}
 
         {errorMsg && (
           <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs text-center font-medium">

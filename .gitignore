@@ -37,3 +37,7 @@ next-env.d.ts
 
 # scratch / test scripts
 test-supabase.js
+
+# legado Java: binários não devem ser versionados
+*.jar
+*.zip
